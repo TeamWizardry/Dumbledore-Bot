@@ -1,0 +1,12 @@
+
+Ref
+Rewrite
+autocorrect.json
+remind_me.json
+/.idea/
+/target/
+*.iml
+bfg.jar
+dependency-reduced-pom.xml
+/dev_mode
+src/main/resources/
