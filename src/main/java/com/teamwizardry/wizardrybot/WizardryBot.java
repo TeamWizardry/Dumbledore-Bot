@@ -45,7 +45,12 @@ public class WizardryBot {
 	public static void main(String[] args) {
 		wizardryBot = new WizardryBot();
 
-		String KEY = System.getenv("ALBUS_KEY");
+		if (args.length <= 0 || args[0].isEmpty()) {
+			System.out.println("No key provided.");
+			return;
+		}
+
+		String KEY = args[0];
 
 		System.out.println("Checking bot authorization...");
 		if (!Keys.authorize(KEY)) return;
