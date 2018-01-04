@@ -55,7 +55,6 @@ public class ModuleAboutCommand extends Module implements ICommandModule {
 		}
 
 		for (Module module : WizardryBot.modules) {
-			if (!module.isListed()) continue;
 			if (module.getName().toLowerCase().contains(cmdName)) {
 				askingAbout = module;
 				break;

@@ -19,7 +19,7 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.*;
 import java.util.Map;
 
-public class ModuleScheduleSyncer extends Module implements ICommandModule {
+public class ModuleTime extends Module implements ICommandModule {
 
 	@Override
 	public String getActionID() {
@@ -33,7 +33,7 @@ public class ModuleScheduleSyncer extends Module implements ICommandModule {
 
 	@Override
 	public String getName() {
-		return "Scheduler Syncer";
+		return "Time";
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class ModuleScheduleSyncer extends Module implements ICommandModule {
 
 	@Override
 	public String getUsage() {
-		return "hey albus, time <register <person> <timezone>>/<view [person]>/<remove <person>>";
+		return "hey albus, time <register/add <person> <timezone>>/<view [person]>/<remove <person>>";
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class ModuleScheduleSyncer extends Module implements ICommandModule {
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 		String[] args = command.getCommandArguments().split(" ");
 
-		if (args[0].equalsIgnoreCase("register")) {
+		if (args[0].equalsIgnoreCase("register") || args[0].equalsIgnoreCase("add")) {
 			if (args.length < 3) {
 				message.getChannel().sendMessage("Incorrect command usage.");
 				return;
@@ -170,6 +170,11 @@ public class ModuleScheduleSyncer extends Module implements ICommandModule {
 				}
 
 				if (person == null) {
+					if (object.getAsJsonObject().entrySet().isEmpty()) {
+						message.getChannel().sendMessage("No person registered.");
+						return;
+					}
+
 					int longestName = 0;
 					for (Map.Entry<String, JsonElement> element : object.getAsJsonObject().entrySet()) {
 						if (element.getKey().length() > longestName) longestName = element.getKey().length();
