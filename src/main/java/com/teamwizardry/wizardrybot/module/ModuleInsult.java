@@ -52,7 +52,7 @@ public class ModuleInsult extends Module implements ICommandModule {
 
 		Random rand = new Random();
 
-		if (any.contains("suck") && any.contains("dick")) {
+		if (insult.contains("suck") && insult.contains("dick")) {
 			int random = rand.nextInt(4);
 			switch (random) {
 				case 0: {
