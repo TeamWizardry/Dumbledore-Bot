@@ -52,71 +52,7 @@ public class ModuleInsultMe extends Module implements ICommandModule {
 
 		Random rand = new Random();
 
-		if (insult.contains("fucks sake") || insult.contains("ffs")) {
-			int random = rand.nextInt(2);
-			switch (random) {
-				case 0: {
-					message.getChannel().sendMessage("I'm trying, ok?!");
-					break;
-				}
-				case 1: {
-					message.getChannel().sendMessage("Shut up! :(");
-					break;
-				}
-				case 2: {
-					message.getChannel().sendMessage("What?! Do I not please you almighty lord?! Screw you!");
-					break;
-				}
-			}
-
-		} else if (insult.contains("fix")) {
-			int random = rand.nextInt(4);
-			switch (random) {
-				case 0: {
-					message.getChannel().sendMessage("Oh please, like you could do better...");
-					break;
-				}
-				case 1: {
-					message.getChannel().sendMessage("No.");
-					break;
-				}
-				case 2: {
-					message.getChannel().sendMessage("I don't see you trying.");
-					break;
-				}
-				case 3: {
-					message.getChannel().sendMessage("No. Leave me alone.");
-					break;
-				}
-				case 4: {
-					message.getChannel().sendMessage("My shit runs better than you do, thank you very much.");
-				}
-			}
-		} else if (insult.contains("fuck") || insult.contains("fck") || insult.contains("fk")) {
-			int random = rand.nextInt(4);
-			switch (random) {
-				case 0: {
-					message.getChannel().sendMessage("No, fuck you.");
-					break;
-				}
-				case 1: {
-					message.getChannel().sendMessage(EmojiManager.getForAlias("middle_finger").getUnicode());
-					break;
-				}
-				case 2: {
-					message.getChannel().sendMessage("Fuck off.");
-					break;
-				}
-				case 3: {
-					message.getChannel().sendMessage("I hope voldemort finds his way to your bedroom.");
-					break;
-				}
-				case 4: {
-					message.getChannel().sendMessage("No, you.");
-					break;
-				}
-			}
-		} else if (any.contains("opb") || any.contains("opm") || (any.contains("one") && any.contains("punch") && any.contains("bot")) || any.contains("244168517396463616")) {
+		if (any.contains("opb") || any.contains("opm") || (any.contains("one") && any.contains("punch") && any.contains("bot")) || any.contains("244168517396463616")) {
 			int random = rand.nextInt(8);
 			switch (random) {
 				case 0: {
@@ -156,26 +92,54 @@ public class ModuleInsultMe extends Module implements ICommandModule {
 				}
 			}
 		} else {
-			int random = rand.nextInt(4);
+			int random = rand.nextInt(11);
 			switch (random) {
 				case 0: {
-					message.getChannel().sendMessage("Shut it.");
+					message.getChannel().sendMessage("Respect your elders you little shit.");
 					break;
 				}
 				case 1: {
-					message.getChannel().sendMessage("Respect your elders...");
+					message.getChannel().sendMessage("I have feelings too you know. \nPiece of shit...");
 					break;
 				}
 				case 2: {
-					message.getChannel().sendMessage("I have feelings too you know...");
+					message.getChannel().sendMessage("You're shit-talking a bot on the internet. You can do better.");
 					break;
 				}
 				case 3: {
-					message.getChannel().sendMessage("... Well that hurt...");
+					message.getChannel().sendMessage(EmojiManager.getForAlias("middle_finger").getUnicode());
 					break;
 				}
 				case 4: {
-					message.getChannel().sendMessage("M8. You're shit-talking a bot on the internet. You can do better.");
+					message.getChannel().sendMessage("Fuck off.");
+					break;
+				}
+				case 5: {
+					message.getChannel().sendMessage("No, you.");
+					break;
+				}
+				case 6: {
+					message.getChannel().sendMessage("Oh please, like you could do better...");
+					break;
+				}
+				case 7: {
+					message.getChannel().sendMessage("I don't see you trying.");
+					break;
+				}
+				case 8: {
+					message.getChannel().sendMessage("Are you trying to ruin my day? I'm a bot, good luck with that.");
+					break;
+				}
+				case 9: {
+					message.getChannel().sendMessage("I'm trying, ok?!");
+					break;
+				}
+				case 10: {
+					message.getChannel().sendMessage("Are you not fucking entertained?!");
+					break;
+				}
+				case 11: {
+					message.getChannel().sendMessage("I'm a fucking bot. What do you expect of me?!");
 					break;
 				}
 			}

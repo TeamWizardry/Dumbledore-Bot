@@ -73,8 +73,12 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 		}
 
 		if (emojiGames.getList() == null) return;
-		if (carosal.get(message.getServer().get()).size() == emojiGames.getList().size())
-			carosal.clear();
+
+		message.getServer().ifPresent(server -> {
+			if (carosal.get(server).size() == emojiGames.getList().size())
+				carosal.clear();
+		});
+
 
 		Random rand = new Random();
 		int random = rand.nextInt(emojiGames.getList().size() - 1);
