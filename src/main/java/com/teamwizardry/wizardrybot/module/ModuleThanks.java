@@ -47,7 +47,7 @@ public class ModuleThanks extends Module implements ICommandModule {
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 		if (command.isPotentiallyACommand()) return;
-		if (!result.getParameters().containsKey("dumbledore")) return;
+		if (!result.getParameters().containsKey("albus")) return;
 
 		String reply = result.getFulfillment().getSpeech();
 		message.getChannel().sendMessage(reply);
