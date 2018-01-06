@@ -58,7 +58,7 @@ public class ModuleTime extends Module implements ICommandModule {
 
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		String[] args = command.getCommandArguments().split(" ");
+		String[] args = command.getCommandArguments().replaceAll(" +", " ").split(" ");
 
 		if (args[0].equalsIgnoreCase("register") || args[0].equalsIgnoreCase("add")) {
 			if (args.length < 3) {
@@ -66,8 +66,13 @@ public class ModuleTime extends Module implements ICommandModule {
 				return;
 			}
 
-			String person = args[1];
-			String timezone = args[2].toLowerCase();
+			String person = args[1].trim();
+			String timezone = args[2].trim().toLowerCase();
+
+			if (person.isEmpty()) {
+				message.getChannel().sendMessage("Name is empty.");
+				return;
+			}
 
 			boolean foundZone = false;
 			for (String zone : DateTimeZone.getAvailableIDs()) {
@@ -80,6 +85,7 @@ public class ModuleTime extends Module implements ICommandModule {
 
 			if (!foundZone) {
 				message.getChannel().sendMessage("Couldn't find timezone `" + timezone + "`. Try another.");
+				return;
 			} else {
 				message.getChannel().sendMessage("Timezone validated. Using `" + timezone + "`");
 			}
