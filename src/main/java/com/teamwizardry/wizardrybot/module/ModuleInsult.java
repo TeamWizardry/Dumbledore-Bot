@@ -10,11 +10,11 @@ import de.btobastian.javacord.entities.message.Message;
 
 import java.util.Random;
 
-public class ModuleInsultMe extends Module implements ICommandModule {
+public class ModuleInsult extends Module implements ICommandModule {
 
 	@Override
 	public String getName() {
-		return "Insult Me";
+		return "Insult";
 	}
 
 	@Override
