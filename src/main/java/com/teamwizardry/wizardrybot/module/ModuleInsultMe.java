@@ -52,7 +52,27 @@ public class ModuleInsultMe extends Module implements ICommandModule {
 
 		Random rand = new Random();
 
-		if (any.contains("opb") || any.contains("opm") || (any.contains("one") && any.contains("punch") && any.contains("bot")) || any.contains("244168517396463616")) {
+		if (any.contains("suck") && any.contains("dick")) {
+			int random = rand.nextInt(4);
+			switch (random) {
+				case 0: {
+					message.getChannel().sendMessage("Ok. ( ͡° ͜ʖ ͡°)");
+					break;
+				}
+				case 1: {
+					message.getChannel().sendMessage("Gladly. ( ͡° ͜ʖ ͡°)");
+					break;
+				}
+				case 2: {
+					message.getChannel().sendMessage("Sure. ( ͡° ͜ʖ ͡°)");
+					break;
+				}
+				case 4: {
+					message.getChannel().sendMessage("( ͡° ͜ʖ ͡°)");
+					break;
+				}
+			}
+		} else if (any.contains("opb") || any.contains("opm") || (any.contains("one") && any.contains("punch") && any.contains("bot")) || any.contains("244168517396463616")) {
 			int random = rand.nextInt(8);
 			switch (random) {
 				case 0: {
