@@ -199,8 +199,8 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 				}
 				if (object.has("extract") && object.get("extract").isJsonPrimitive()) {
 					extract = object.getAsJsonPrimitive("extract").getAsString();
-					if (extract.length() > 1024) {
-						extract = extract.substring(0, 1020) + "...";
+					if (extract.length() > 1000) {
+						extract = extract.substring(0, 1000) + "...";
 					}
 				}
 				if (object.has("description") && object.get("description").isJsonPrimitive()) {
@@ -218,9 +218,10 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 				} else {
 					EmbedBuilder builder = new EmbedBuilder()
 							.setTitle(title)
-							.setDescription(description)
-							.setImage(sourceImage)
 							.addField("Extract", extract, false);
+
+					if (sourceImage != null) builder.setImage(sourceImage);
+					if (description != null) builder.setDescription(description);
 					message.getChannel().sendMessage(builder);
 					return true;
 				}
