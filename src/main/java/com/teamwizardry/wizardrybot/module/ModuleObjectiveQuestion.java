@@ -1,10 +1,6 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.google.cloud.language.v1.Document;
-import com.google.cloud.language.v1.EncodingType;
-import com.google.cloud.language.v1.Entity;
-import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -22,7 +18,6 @@ import org.json.XML;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class ModuleObjectiveQuestion extends Module implements ICommandModule {
@@ -64,9 +59,18 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 			String any = result.getStringParameter("any");
 			any = any.replace(" ", "_");
 
-			if (!tryWikipediaSearch(message, any)) {
+			if (command.getCommandArguments().contains("mean") || command.getCommandArguments().contains("defin")) {
 				if (!tryMerriamSearch(message, any)) {
+					if (!tryWikipediaSearch(message, any)) {
+						message.getChannel().sendMessage("Idk what you mean by `" + any + "`");
+					}
+				}
+			} else {
+				if (!tryWikipediaSearch(message, any)) {
+					if (!tryMerriamSearch(message, any)) {
+						message.getChannel().sendMessage("Idk what you mean by `" + any + "`");
 
+					/*
 					try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
 						String text = result.getStringParameter("any");
@@ -85,6 +89,7 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
+					}*/
 					}
 				}
 			}

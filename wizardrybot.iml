@@ -10,6 +10,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: teamsaalad:StickyTapeLib:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.mashape.unirest:unirest-java:1.4.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpasyncclient:4.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore-nio:4.4.4" level="project" />
