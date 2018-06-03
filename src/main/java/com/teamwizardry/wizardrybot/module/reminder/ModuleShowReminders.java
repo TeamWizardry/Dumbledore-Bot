@@ -9,10 +9,10 @@ import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
 import com.teamwizardry.wizardrybot.api.Utils;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.user.User;
 import org.joda.time.DateTime;
 
 import java.awt.*;

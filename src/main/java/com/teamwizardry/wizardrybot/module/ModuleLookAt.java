@@ -5,10 +5,10 @@ import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.*;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.MessageAttachment;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAttachment;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

@@ -6,12 +6,12 @@ import com.google.gson.JsonObject;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

@@ -5,9 +5,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
 import org.apache.commons.io.FileUtils;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
 
 import java.io.File;
 import java.io.FileReader;

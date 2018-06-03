@@ -2,7 +2,7 @@ package com.teamwizardry.wizardrybot.api;
 
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.WizardryBot;
-import de.btobastian.javacord.entities.message.Message;
+import org.javacord.api.entity.message.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

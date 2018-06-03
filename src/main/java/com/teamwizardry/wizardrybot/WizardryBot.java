@@ -7,10 +7,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.DiscordApiBuilder;
-import de.btobastian.javacord.entities.channels.Channel;
-import de.btobastian.javacord.entities.message.Message;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.message.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
@@ -57,6 +57,7 @@ public class WizardryBot {
 		System.out.println("Authorized!");
 
 		new DiscordApiBuilder().setToken(KEY).login().thenAccept(api -> {
+			System.out.println(api.createBotInvite());
 			init(api, wizardryBot);
 			System.out.println("YOU SHALL NOT PASS!");
 		}).exceptionally(throwable -> {

@@ -7,14 +7,9 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.teamwizardry.wizardrybot.WizardryBot;
-import de.btobastian.javacord.ImplDiscordApi;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.impl.ImplUser;
+import org.javacord.api.entity.user.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
-
-import java.io.IOException;
 
 public class WebHook {
 
@@ -88,16 +83,17 @@ public class WebHook {
 		if (object.has("id") && object.get("id").isJsonPrimitive())
 			webHookID = object.getAsJsonPrimitive("id").getAsString();
 
-		if (object.has("user") && object.get("user").isJsonObject()) {
-			JsonObject gson = object.getAsJsonObject("user");
-			JSONObject javaJson = new JSONObject(gson.toString());
-
-			com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-			try {
-				sender = new ImplUser((ImplDiscordApi) WizardryBot.API, mapper.readTree(javaJson.toString()));
-			} catch (IOException e) {
-			}
-		}
+		//if (object.has("user") && object.get("user").isJsonObject()) {
+		//	JsonObject gson = object.getAsJsonObject("user");
+		//	JSONObject javaJson = new JSONObject(gson.toString());
+//
+		//	ObjectMapper mapper = new ObjectMapper();
+		//	try {
+		//		sender = new
+		//		sender = new ImplUser((ImplDiscordApi) WizardryBot.API, mapper.readTree(javaJson.toString()));
+		//	} catch (IOException e) {
+		//	}
+		//}
 	}
 
 	public String toJson() {

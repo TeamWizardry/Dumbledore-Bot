@@ -6,11 +6,11 @@ import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
 import com.vdurmont.emoji.EmojiManager;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.Server;
-import de.btobastian.javacord.entities.channels.Channel;
-import de.btobastian.javacord.entities.message.Message;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.server.Server;
 
 import java.util.HashMap;
 import java.util.Random;

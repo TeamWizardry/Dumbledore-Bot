@@ -5,11 +5,11 @@ import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
 import com.teamwizardry.wizardrybot.api.ThreadManager;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.permissions.PermissionState;
-import de.btobastian.javacord.entities.permissions.PermissionType;
-import de.btobastian.javacord.entities.permissions.Role;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.permission.PermissionState;
+import org.javacord.api.entity.permission.PermissionType;
+import org.javacord.api.entity.permission.Role;
 
 public class ModuleDebugReminders extends Module implements ICommandModule {
 

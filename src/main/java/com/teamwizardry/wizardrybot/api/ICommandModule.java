@@ -1,8 +1,8 @@
 package com.teamwizardry.wizardrybot.api;
 
 import ai.api.model.Result;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
 
 public interface ICommandModule {
 

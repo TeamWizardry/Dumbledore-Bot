@@ -2,17 +2,18 @@ package com.teamwizardry.wizardrybot.api;
 
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
-import de.btobastian.javacord.entities.Server;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.channels.Channel;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.permissions.Role;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.permission.Role;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 import org.jetbrains.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.net.*;
+import java.util.concurrent.ExecutionException;
 
 public class Utils {
 
@@ -40,14 +41,17 @@ public class Utils {
 				.replace("@here", "@\u200Bhere")
 				.trim();
 
-		String[] mentions = StringUtils.substringsBetween(string, "<@", ">");
-		if (mentions != null)
-			for (String id : mentions) {
-				id = id.replace("!", "");
-				User user = WizardryBot.API.getUserById(id).get();
-				string = string.replace("<@" + id + ">", "@\u200B" + user.getName());
-			}
-
+		try {
+			String[] mentions = StringUtils.substringsBetween(string, "<@", ">");
+			if (mentions != null)
+				for (String id : mentions) {
+					id = id.replace("!", "");
+					User user = WizardryBot.API.getUserById(id).get();
+					string = string.replace("<@" + id + ">", "@\u200B" + user.getName());
+				}
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+		}
 		return string;
 	}
 

@@ -10,10 +10,10 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.api.*;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.message.Message;
 import org.apache.commons.codec.binary.Base64;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.user.User;
 
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;

@@ -3,11 +3,11 @@ package com.teamwizardry.wizardrybot.module;
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.*;
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.entities.message.embed.EmbedBuilder;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

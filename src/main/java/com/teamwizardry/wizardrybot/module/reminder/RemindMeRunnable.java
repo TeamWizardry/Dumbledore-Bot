@@ -3,9 +3,9 @@ package com.teamwizardry.wizardrybot.module.reminder;
 import com.google.gson.*;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.Utils;
-import de.btobastian.javacord.entities.Server;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.channels.Channel;
+import org.javacord.api.entity.channel.Channel;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 import org.joda.time.DateTime;
 
 import java.io.*;
