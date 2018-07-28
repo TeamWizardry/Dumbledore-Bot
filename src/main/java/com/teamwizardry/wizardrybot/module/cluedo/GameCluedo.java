@@ -2,8 +2,8 @@ package com.teamwizardry.wizardrybot.module.cluedo;
 
 import com.teamwizardry.wizardrybot.api.RandUtil;
 import org.javacord.api.entity.user.User;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public class GameCluedo {

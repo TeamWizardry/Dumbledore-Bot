@@ -27,6 +27,25 @@
     </repositories>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/ai.api/libai -->
+        <dependency>
+            <groupId>ai.api</groupId>
+            <artifactId>libai</artifactId>
+            <version>1.6.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-language</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-vision</artifactId>
+            <version>1.14.0</version>
+        </dependency>
+
         <dependency>
             <groupId>de.btobastian.Javacord</groupId>
             <artifactId>javacord</artifactId>
@@ -51,18 +70,6 @@
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-language</artifactId>
-            <version>1.14.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-vision</artifactId>
-            <version>1.14.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpcore -->
@@ -151,13 +158,6 @@
             <groupId>com.intellij</groupId>
             <artifactId>annotations</artifactId>
             <version>12.0</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/ai.api/libai -->
-        <dependency>
-            <groupId>ai.api</groupId>
-            <artifactId>libai</artifactId>
-            <version>1.6.12</version>
         </dependency>
 
         <dependency>                        <!-- REQUIRED -->

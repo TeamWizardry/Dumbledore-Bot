@@ -13,6 +13,11 @@ import java.util.Random;
 public class ModuleInsult extends Module implements ICommandModule {
 
 	@Override
+	public int getPriority() {
+		return -1;
+	}
+
+	@Override
 	public String getName() {
 		return "Insult";
 	}
@@ -44,11 +49,11 @@ public class ModuleInsult extends Module implements ICommandModule {
 
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (result.getStringParameter("curse") == null) return;
+		if (!result.getParameters().containsKey("curse")) return;
 
 		String insult = result.getStringParameter("curse").toLowerCase().trim();
 		String any = result.getStringParameter("any").toLowerCase().trim();
-		if (insult.equals("")) return;
+		if (insult.isEmpty()) return;
 
 		Random rand = new Random();
 

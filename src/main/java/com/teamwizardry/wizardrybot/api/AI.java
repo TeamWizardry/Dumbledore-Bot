@@ -1,5 +1,6 @@
 package com.teamwizardry.wizardrybot.api;
 
+
 import ai.api.AIConfiguration;
 import ai.api.AIDataService;
 import ai.api.AIServiceException;
@@ -20,6 +21,7 @@ public class AI {
 	private AI() {
 		AIConfiguration configuration = new AIConfiguration(Keys.DIALOGFLOW_API);
 		dataService = new AIDataService(configuration);
+
 	}
 
 	@Nullable

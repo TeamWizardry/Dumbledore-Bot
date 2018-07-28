@@ -7,11 +7,11 @@ import com.teamwizardry.wizardrybot.api.Module;
 import org.apache.commons.lang.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.permission.PermissionState;
 import org.javacord.api.entity.permission.PermissionType;
 import org.javacord.api.entity.permission.Role;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
-
-import java.util.List;
 
 public class ModuleCluedo extends Module implements ICommandModule {
 
@@ -58,15 +58,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 			return;
 		}
 
-		boolean isAdmin = false;
-
-		List<Role> roles = message.getUserAuthor().get().getRoles(message.getServer().get());
-		for (Role role : roles) {
-			if (role.getAllowedPermissions().contains(PermissionType.ADMINISTRATOR)) {
-				isAdmin = true;
-				break;
-			}
-		}
+		boolean isAdmin = isAdmin(message.getServer().get(), message.getUserAuthor().get());
 
 		if (args[0].equals("create")) {
 			if (!isAdmin) {
@@ -146,5 +138,17 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " You are already in the game.");
 			}
 		}
+	}
+
+	private boolean isAdmin(Server server, User user) {
+		if (server.getOwner().equals(user)) {
+			return true;
+		}
+		for (Role r : user.getRoles(server)) {
+			if (r.getPermissions().getState(PermissionType.ADMINISTRATOR).equals(PermissionState.ALLOWED)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
