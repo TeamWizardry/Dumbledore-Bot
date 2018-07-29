@@ -19,6 +19,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -125,7 +126,12 @@ public class ModuleLookAt extends Module implements ICommandModule {
 					}
 
 					message.getChannel().sendMessage("Downloading image...");
-					BufferedImage img = ImageIO.read(new URL(url).openStream());
+
+					URL urlObject = new URL(url);
+					URLConnection urlConnection = urlObject.openConnection();
+					urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
+
+					BufferedImage img = ImageIO.read(urlConnection.getInputStream());
 					if (img == null) {
 						message.getChannel().sendMessage("Couldn't download image. Please try again with another link.");
 						return;
