@@ -1,9 +1,7 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import com.google.common.base.Splitter;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.List;
 
 public class ModuleConvertText extends Module {
 
@@ -64,29 +63,18 @@ public class ModuleConvertText extends Module {
 
 					String txt = sb.toString();
 
-					HttpResponse<String> response = Unirest
-							.post("https://pastebin.com/api/api_post.php")
-							.field("api_paste_code", txt)
-							.field("api_dev_key", "78ed8f15e7325b20ea0752c3ac8aa1cc")
-							.field("api_paste_private", 1)
-							.field("api_paste_name", attachment.getFileName())
-							.field("api_option", "paste")
-							.asString();
-
-					String node = response.getBody();
-
-					message.getChannel().sendMessage(node.replace(".com/", ".com/raw/"));
-
-					if (txt.contains("//")) {
+					if (txt.contains("Time: ") && txt.contains("at net.minecraft")) {
 						message.getChannel().sendMessage("SUMMARY:");
 						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
 					} else if (txt.length() > 1500) {
-						message.getChannel().sendMessage("```" + txt.substring(0, 1480) + "...```");
+						List<String> splits = Splitter.fixedLength(1500).splitToList(txt);
+						for (String string : splits)
+							message.getChannel().sendMessage("```" + string + "```");
 					} else {
 						message.getChannel().sendMessage("```" + txt + "```");
 					}
 
-				} catch (IOException | UnirestException e) {
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
