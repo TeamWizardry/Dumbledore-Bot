@@ -80,6 +80,10 @@ public class ModuleConvertText extends Module {
 					if (txt.contains("//")) {
 						message.getChannel().sendMessage("SUMMARY:");
 						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
+					} else if (txt.length() > 1500) {
+						message.getChannel().sendMessage("```" + txt.substring(0, 1480) + "...```");
+					} else {
+						message.getChannel().sendMessage("```" + txt + "```");
 					}
 
 				} catch (IOException | UnirestException e) {
