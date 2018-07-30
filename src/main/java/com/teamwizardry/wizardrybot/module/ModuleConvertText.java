@@ -23,6 +23,11 @@ public class ModuleConvertText extends Module {
 	}
 
 	@Override
+	public int getPriority() {
+		return -1;
+	}
+
+	@Override
 	public String getName() {
 		return "Text File Converter";
 	}
