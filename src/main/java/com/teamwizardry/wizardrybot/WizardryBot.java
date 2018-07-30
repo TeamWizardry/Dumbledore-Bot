@@ -67,17 +67,18 @@ public class WizardryBot {
 	}
 
 	private static void init(DiscordApi api, WizardryBot wizardryBot) {
-		File dev = new File("dev_mode");
-		if (dev.exists()) DEV_MODE = true;
-
-		if (!DEV_MODE)
+		Thread domainThread = new Thread(() -> {
 			try {
 				domains = new URL("https://raw.githubusercontent.com/TeamWizardry/Dumbledore-Bot/master/domains.txt");
 
 				Domains.INSTANCE.getClass();
-			} catch (MalformedURLException e) {
+			} catch (
+					MalformedURLException e) {
 				e.printStackTrace();
 			}
+		});
+
+		domainThread.start();
 
 		Thread apiUpdateThread = new Thread(() -> {
 			//try {

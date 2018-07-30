@@ -84,8 +84,11 @@ public class ModuleAutoComplete extends Module implements ICommandModule {
 									}
 							}
 							{
-								if (!carosal.get(command.getCommandArguments()).isEmpty())
-									message.getChannel().sendMessage(Utils.processMentions(carosal.get(command.getCommandArguments()).remove(new Random().nextInt(carosal.get(command.getCommandArguments()).size() - 1))));
+								if (!carosal.get(command.getCommandArguments()).isEmpty()) {
+									String s = Utils.processMentions(carosal.get(command.getCommandArguments()).remove(new Random().nextInt(carosal.get(command.getCommandArguments()).size() - 1)));
+									message.getChannel().sendMessage(s);
+									ModuleObjectiveQuestion.runLookup(message, s);
+								}
 							}
 							file.delete();
 							return;

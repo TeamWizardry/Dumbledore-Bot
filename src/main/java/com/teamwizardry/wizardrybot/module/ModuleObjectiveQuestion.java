@@ -1,6 +1,10 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.EncodingType;
+import com.google.cloud.language.v1.Entity;
+import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -18,6 +22,7 @@ import org.json.XML;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class ModuleObjectiveQuestion extends Module implements ICommandModule {
@@ -52,44 +57,27 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 		return "hey albus, what's a cookie?";
 	}
 
-	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public static void runLookup(Message message, final String anyString) {
 		ThreadManager.INSTANCE.addThread(new Thread(() -> {
 
-			String any = result.getStringParameter("any");
-			any = any.replace(" ", "_");
+			String txt = anyString.replace(" ", "_");
 
-			if (command.getCommandArguments().contains("mean") || command.getCommandArguments().contains("defin")) {
-				if (!tryMerriamSearch(message, any)) {
-					if (!tryWikipediaSearch(message, any)) {
-						message.getChannel().sendMessage("Idk what you mean by `" + any + "`");
-					}
-				}
-			} else {
-				if (!tryWikipediaSearch(message, any)) {
-					if (!tryMerriamSearch(message, any)) {
-						message.getChannel().sendMessage("Idk what you mean by `" + any + "`");
+			if (!tryWikipediaSearch(message, txt)) {
+				if (!tryMerriamSearch(message, txt)) {
 
-					/*
 					try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
-						String text = result.getStringParameter("any");
-						Document doc = Document.newBuilder().setContent(text).setType(Document.Type.PLAIN_TEXT).build();
+						Document doc = Document.newBuilder().setContent(anyString).setType(Document.Type.PLAIN_TEXT).build();
 
 						List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
 						for (Entity entity : entities) {
-
-							any = entity.getName();
-							any = any.replace(" ", "_");
-							if (!tryWikipediaSearch(message, any)) {
-								if (!tryMerriamSearch(message, any)) {
-									message.getChannel().sendMessage("Idk what you mean by `" + any + "`");
-								}
+							message.getChannel().sendMessage("entity: " + entity.getName());
+							if (!tryWikipediaSearch(message, entity.getName())) {
+								tryMerriamSearch(message, entity.getName());
 							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
-					}*/
 					}
 				}
 			}
@@ -97,7 +85,7 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 		}));
 	}
 
-	private boolean tryMerriamSearch(Message message, String entity) {
+	private static boolean tryMerriamSearch(Message message, String entity) {
 		try {
 			ArrayList<MerriamInterpretter.MerriamResult> results;
 			ArrayList<String> outputSuggestions;
@@ -180,7 +168,7 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 		}
 	}
 
-	private boolean tryWikipediaSearch(Message message, String entity) {
+	private static boolean tryWikipediaSearch(Message message, String entity) {
 		try {
 			HttpResponse<JsonNode> response = Unirest
 					.get("https://en.wikipedia.org/api/rest_v1/page/summary/" + entity)
@@ -231,5 +219,57 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 			return false;
 		}
 		return false;
+	}
+
+	@Override
+	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+		ThreadManager.INSTANCE.addThread(new Thread(() -> {
+
+			String any = result.getStringParameter("any");
+
+			String txt = any.replace(" ", "_");
+
+			boolean anySuccess = false;
+			if (command.getCommandArguments().contains("mean") || command.getCommandArguments().contains("defin")) {
+				if (tryMerriamSearch(message, txt)) {
+					anySuccess = true;
+				} else if (tryWikipediaSearch(message, txt)) {
+					anySuccess = true;
+				}
+			} else {
+				if (!tryWikipediaSearch(message, txt)) {
+					if (!tryMerriamSearch(message, txt)) {
+
+						try (LanguageServiceClient language = LanguageServiceClient.create()) {
+
+							Document doc = Document.newBuilder().setContent(any).setType(Document.Type.PLAIN_TEXT).build();
+
+							List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
+							for (Entity entity : entities) {
+								message.getChannel().sendMessage("entity: " + entity.getName());
+
+								if (tryWikipediaSearch(message, entity.getName())) {
+									anySuccess = true;
+								} else if (tryMerriamSearch(message, entity.getName())) {
+									anySuccess = true;
+								}
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					} else {
+						anySuccess = true;
+					}
+				} else {
+					anySuccess = true;
+				}
+
+			}
+
+			if (!anySuccess) {
+				message.getChannel().sendMessage("I don't know what `" + any + "` is. Ask something similar.");
+			}
+
+		}));
 	}
 }
