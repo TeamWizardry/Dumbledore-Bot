@@ -71,7 +71,6 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 
 						List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
 						for (Entity entity : entities) {
-							message.getChannel().sendMessage("entity: " + entity.getName());
 							if (!tryWikipediaSearch(message, entity.getName())) {
 								tryMerriamSearch(message, entity.getName());
 							}
@@ -246,7 +245,6 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 
 							List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
 							for (Entity entity : entities) {
-								message.getChannel().sendMessage("entity: " + entity.getName());
 
 								if (tryWikipediaSearch(message, entity.getName())) {
 									anySuccess = true;
