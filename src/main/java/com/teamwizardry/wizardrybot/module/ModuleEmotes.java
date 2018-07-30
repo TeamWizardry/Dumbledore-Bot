@@ -1,17 +1,18 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
+import com.google.gson.JsonObject;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.WebHook;
-import org.apache.commons.codec.binary.Base64;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 public class ModuleEmotes extends Module implements ICommandModule {
 
@@ -135,14 +136,31 @@ public class ModuleEmotes extends Module implements ICommandModule {
 					username = nick.orElseGet(() -> user.getDisplayName(server));
 				});
 
-				String avatar = null;
-				try {
-					avatar = "data:image/jpeg;base64," + new String(Base64.encodeBase64(message.getAuthor().getAvatar().asByteArray().get()));
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-				}
+				message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
+						.createWebhookBuilder()
+						.setAvatar(message.getAuthor().getAvatar())
+						.setName(username)
+						.create()
+						.whenComplete((webhook, throwable) -> {
 
-				new WebHook(message.getChannel().getId(), username, avatar).execute(finalEmote + " " + s, null, null).delete();
+							webhook.getToken().ifPresent(token -> {
+								JsonObject object = new JsonObject();
+								object.addProperty("content", finalEmote + " " + s);
+								object.addProperty("username", username);
+								object.addProperty("avatar_url", message.getAuthor().getAvatar().getUrl().toString());
+								try {
+									HttpResponse<String> response = Unirest.post("https://discordapp.com/api/v6/webhooks/" + webhook.getIdAsString() + "/" + token)
+											.header("Content-Type", "application/json")
+											.body(object.toString())
+											.asString();
+									message.getChannel().sendMessage(response.getBody());
+								} catch (UnirestException e) {
+									e.printStackTrace();
+								}
+							});
+
+							webhook.delete();
+						}));
 			});
 
 		} else {

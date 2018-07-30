@@ -261,13 +261,11 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 				} else {
 					anySuccess = true;
 				}
-
 			}
 
 			if (!anySuccess) {
 				message.getChannel().sendMessage("I don't know what `" + any + "` is. Ask something similar.");
 			}
-
 		}));
 	}
 }
