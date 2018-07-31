@@ -19,10 +19,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
+import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 public class ModuleNeedsMoreJpeg extends Module implements ICommandModule {
 
@@ -77,27 +76,11 @@ public class ModuleNeedsMoreJpeg extends Module implements ICommandModule {
 		ThreadManager.INSTANCE.addThread(new Thread(() -> {
 			try {
 
-				List<Message> messageHistory = new ArrayList<>(message.getChannel().getMessages(20).get());
-				Collections.reverse(messageHistory);
-
-				URL url = null;
-				for (Message msg : messageHistory) {
-					String matchedURL = Utils.findURLInString(msg.getContent());
-					if (matchedURL != null && !matchedURL.isEmpty() && Domains.INSTANCE.isLinkWhitelisted(matchedURL)) {
-						url = new URL(matchedURL);
-						break;
-					}
-				}
-				if (url == null) {
-					System.out.println("Needs more jpeg: Couldn't find any image");
-					return;
-				}
-
+				List<BufferedImage> images = Utils.stupidVerboseImageSearch(message);
+				if (images.isEmpty()) return;
 				UUID uuid = UUID.randomUUID();
-				URLConnection openConnection = url.openConnection();
-				openConnection.addRequestProperty("User-Agent", "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405");
 
-				BufferedImage buffer = ImageIO.read(openConnection.getInputStream());
+				BufferedImage buffer = images.get(0);
 				int originalHeight = buffer.getHeight();
 				int originalWidth = buffer.getWidth();
 
