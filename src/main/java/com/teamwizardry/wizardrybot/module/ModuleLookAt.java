@@ -136,14 +136,10 @@ public class ModuleLookAt extends Module implements ICommandModule {
 									.build();
 					requests.add(request);
 
-					message.getChannel().sendMessage("Uploading to google...");
-
 					ImageAnnotatorClient client = ImageAnnotatorClient.create();
 
 					BatchAnnotateImagesResponse response = client.batchAnnotateImages(requests);
 					List<AnnotateImageResponse> responses = response.getResponsesList();
-
-					message.getChannel().sendMessage("Processing results...");
 
 					for (AnnotateImageResponse res : responses) {
 
