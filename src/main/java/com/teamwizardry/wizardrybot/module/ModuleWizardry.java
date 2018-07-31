@@ -3,7 +3,6 @@ package com.teamwizardry.wizardrybot.module;
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.WizardryAI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -41,11 +40,11 @@ public class ModuleWizardry extends Module {
 
 	@Override
 	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
-		Result result1 = WizardryAI.INSTANCE.think(message.getContent());
-		if (result1 == null) return;
-		String reply = result1.getFulfillment().getSpeech();
-		message.getChannel().sendMessage(reply);
-
-		message.getChannel().sendMessage(result1.getAction());
+		//Result result1 = WizardryAI.INSTANCE.think(message.getContent());
+		//if (result1 == null) return;
+		//String reply = result1.getFulfillment().getSpeech();
+		//message.getChannel().sendMessage(reply);
+//
+		//message.getChannel().sendMessage(result1.getAction());
 	}
 }
