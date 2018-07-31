@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 public final class Keys {
 
+	public static String WIZARDRY_DIALOGFLOW_API;
 	public static String DIALOGFLOW_API;
 	public static String BING_SPELL_CHECK_API;
 	public static String MERRIAM_DICTIONARY_KEY;
@@ -44,6 +45,7 @@ public final class Keys {
 				Keys.CLOUDINARY_NAME = object.getAsJsonPrimitive("cloudinary_name").getAsString();
 				Keys.CLOUDINARY_KEY = object.getAsJsonPrimitive("cloudinary_key").getAsString();
 				Keys.CLOUDINARY_SECRET = object.getAsJsonPrimitive("cloudinary_secret").getAsString();
+				Keys.WIZARDRY_DIALOGFLOW_API = object.getAsJsonPrimitive("wizardry_dialogflow_api").getAsString();
 
 				return true;
 			}

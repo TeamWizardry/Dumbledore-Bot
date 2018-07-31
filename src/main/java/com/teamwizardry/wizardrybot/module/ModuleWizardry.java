@@ -3,13 +3,11 @@ package com.teamwizardry.wizardrybot.module;
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.StringConstants;
+import com.teamwizardry.wizardrybot.api.WizardryAI;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
-import java.util.Arrays;
-
-public class ModuleSanityCheck extends Module {
+public class ModuleWizardry extends Module {
 
 	@Override
 	public boolean overrideResponseCheck() {
@@ -17,31 +15,37 @@ public class ModuleSanityCheck extends Module {
 	}
 
 	@Override
+	public boolean isListed() {
+		return false;
+	}
+
+	@Override
 	public String getName() {
-		return "Sanity Check";
+		return "Wizardry";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Ping the bot.";
+		return "Ask questions about wizardry";
 	}
 
 	@Override
 	public String getUsage() {
-		return "Say one of the following: " + Arrays.toString(StringConstants.hi) + " - followed by: " + Arrays.toString(StringConstants.albus);
+		return null;
 	}
 
 	@Override
 	public String getExample() {
-		return "'hey alby!' or 'sup albus!' or 'bonjour albus' or 'bonjour dumbledore!'";
+		return null;
 	}
 
 	@Override
 	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
-		if (command.isPotentiallyACommand()) return;
-		if (!command.hasSaidHey()) return;
-
-		String reply = result.getFulfillment().getSpeech();
+		Result result1 = WizardryAI.INSTANCE.think(message.getContent());
+		if (result1 == null) return;
+		String reply = result1.getFulfillment().getSpeech();
 		message.getChannel().sendMessage(reply);
+
+		message.getChannel().sendMessage(result1.getAction());
 	}
 }

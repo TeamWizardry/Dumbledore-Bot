@@ -63,8 +63,7 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 			String txt = anyString.replace(" ", "_");
 
 			if (!tryWikipediaSearch(message, txt)) {
-				if (!tryMerriamSearch(message, txt)) {
-
+				if (!tryMerriamSearch(message, txt))
 					try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
 						Document doc = Document.newBuilder().setContent(anyString).setType(Document.Type.PLAIN_TEXT).build();
@@ -72,13 +71,20 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 						List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
 						for (Entity entity : entities) {
 							if (!tryWikipediaSearch(message, entity.getName())) {
-								tryMerriamSearch(message, entity.getName());
+								if (!tryMerriamSearch(message, entity.getName())) {
+									if (entity.getName().contains(" ")) {
+										for (String words : entity.getName().split(" ")) {
+											if (!tryWikipediaSearch(message, words)) {
+												tryMerriamSearch(message, words);
+											}
+										}
+									}
+								}
 							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				}
 			}
 
 		}));
@@ -235,7 +241,8 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 				} else if (tryWikipediaSearch(message, txt)) {
 					anySuccess = true;
 				}
-			} else {
+			}
+			if (!anySuccess) {
 				if (!tryWikipediaSearch(message, txt)) {
 					if (!tryMerriamSearch(message, txt)) {
 
@@ -245,11 +252,18 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 
 							List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
 							for (Entity entity : entities) {
-
 								if (tryWikipediaSearch(message, entity.getName())) {
 									anySuccess = true;
 								} else if (tryMerriamSearch(message, entity.getName())) {
 									anySuccess = true;
+								} else if (entity.getName().contains(" ")) {
+									for (String words : entity.getName().split(" ")) {
+										if (tryWikipediaSearch(message, words)) {
+											anySuccess = true;
+										} else if (tryMerriamSearch(message, words)) {
+											anySuccess = true;
+										}
+									}
 								}
 							}
 						} catch (Exception e) {

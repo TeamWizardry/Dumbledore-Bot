@@ -216,7 +216,7 @@ public class WizardryBot {
 						} else priorityList.add(module);
 					}
 				} else {
-					priorityList.add(module);
+					module.onMessage(api, message, result, command);
 				}
 			}
 		}
