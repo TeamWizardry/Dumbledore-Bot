@@ -7,7 +7,6 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.api.*;
-import org.apache.commons.codec.binary.Base64;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.user.User;
@@ -17,7 +16,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 
 public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
@@ -198,14 +196,16 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 					username = nick.orElseGet(() -> user.getDisplayName(server));
 				});
 
-				String avatar = null;
-				try {
-					avatar = "data:image/jpeg;base64," + new String(Base64.encodeBase64(message.getAuthor().getAvatar().asByteArray().get()));
-				} catch (InterruptedException | ExecutionException e) {
-					e.printStackTrace();
-				}
-
-				new WebHook(message.getChannel().getId(), username, avatar).execute(string, null, null).delete();
+				String finalString = string;
+				message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
+						.createWebhookBuilder()
+						.setAvatar(message.getAuthor().getAvatar())
+						.setName(username)
+						.create()
+						.whenComplete((webhook, throwable) -> {
+							Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
+							webhook.delete();
+						}));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

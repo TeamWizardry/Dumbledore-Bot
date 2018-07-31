@@ -1,13 +1,10 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.google.gson.JsonObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Utils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -142,23 +139,7 @@ public class ModuleEmotes extends Module implements ICommandModule {
 						.setName(username)
 						.create()
 						.whenComplete((webhook, throwable) -> {
-
-							webhook.getToken().ifPresent(token -> {
-								JsonObject object = new JsonObject();
-								object.addProperty("content", finalEmote + " " + s);
-								object.addProperty("username", username);
-								object.addProperty("avatar_url", message.getAuthor().getAvatar().getUrl().toString());
-								try {
-									HttpResponse<String> response = Unirest.post("https://discordapp.com/api/v6/webhooks/" + webhook.getIdAsString() + "/" + token)
-											.header("Content-Type", "application/json")
-											.body(object.toString())
-											.asString();
-									message.getChannel().sendMessage(response.getBody());
-								} catch (UnirestException e) {
-									e.printStackTrace();
-								}
-							});
-
+							Utils.sendWebhookMessage(webhook, finalEmote + " " + s, username, message.getAuthor().getAvatar().getUrl().toString());
 							webhook.delete();
 						}));
 			});

@@ -1,5 +1,8 @@
 package com.teamwizardry.wizardrybot.api;
 
+import com.google.gson.JsonObject;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +12,7 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.permission.Role;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.entity.webhook.Webhook;
 import org.jetbrains.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -16,6 +20,23 @@ import java.net.*;
 import java.util.concurrent.ExecutionException;
 
 public class Utils {
+
+	public static void sendWebhookMessage(Webhook webhook, String message, String username, String avatarURL) {
+		webhook.getToken().ifPresent(token -> {
+			JsonObject object = new JsonObject();
+			object.addProperty("content", message);
+			object.addProperty("username", username);
+			object.addProperty("avatar_url", avatarURL);
+			try {
+				Unirest.post("https://discordapp.com/api/v6/webhooks/" + webhook.getIdAsString() + "/" + token)
+						.header("Content-Type", "application/json")
+						.body(object.toString())
+						.asString();
+			} catch (UnirestException e) {
+				e.printStackTrace();
+			}
+		});
+	}
 
 	public static String processMentions(Message message) {
 		String string = message.getContent();
