@@ -140,7 +140,7 @@ public class ModuleInsult extends Module implements ICommandModule {
 					break;
 				}
 				case 5: {
-					message.getChannel().sendMessage("No, you.");
+					message.getChannel().sendMessage("no u");
 					break;
 				}
 				case 6: {
