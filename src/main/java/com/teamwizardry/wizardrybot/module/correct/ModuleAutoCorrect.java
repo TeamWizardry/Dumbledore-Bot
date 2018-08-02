@@ -126,6 +126,7 @@ public class ModuleAutoCorrect extends Module implements ICommandModule {
 								webhook.delete();
 							}));
 
+					Statistics.INSTANCE.addToStat("auto_corrections_made");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

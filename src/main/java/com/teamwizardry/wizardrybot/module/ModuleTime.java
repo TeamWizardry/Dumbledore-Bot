@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -112,6 +113,7 @@ public class ModuleTime extends Module implements ICommandModule {
 				FileWriter writer = new FileWriter(file);
 				writer.write(new Gson().toJson(object));
 				writer.flush();
+				Statistics.INSTANCE.addToStat("timezones_registered");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -146,6 +148,7 @@ public class ModuleTime extends Module implements ICommandModule {
 					writer.write(new Gson().toJson(object));
 					writer.flush();
 					message.getChannel().sendMessage("Removed `" + person + "` from list.");
+					Statistics.INSTANCE.addToStat("timezones_removed");
 				}
 
 			} catch (IOException e) {
@@ -211,6 +214,7 @@ public class ModuleTime extends Module implements ICommandModule {
 					builder.append("```");
 
 					message.getChannel().sendMessage(builder.toString());
+					Statistics.INSTANCE.addToStat("time_tables_viewed");
 				} else {
 
 					if (!object.getAsJsonObject().has(person)) {
@@ -240,6 +244,7 @@ public class ModuleTime extends Module implements ICommandModule {
 					builder.append("```");
 
 					message.getChannel().sendMessage(builder.toString());
+					Statistics.INSTANCE.addToStat("time_tables_viewed");
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();

@@ -4,6 +4,7 @@ import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -51,5 +52,6 @@ public class ModuleThanks extends Module implements ICommandModule {
 
 		String reply = result.getFulfillment().getSpeech();
 		message.getChannel().sendMessage(reply);
+		Statistics.INSTANCE.addToStat("compliments_given");
 	}
 }

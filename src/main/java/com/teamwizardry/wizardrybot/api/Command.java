@@ -35,6 +35,7 @@ public class Command {
 			result = AI.INSTANCE.think(content.contains(",") ? splits[0] : content);
 			hasSaidHey = WizardryBot.doesPassResult(result, "input.hey");
 		}
+		if (hasSaidHey) Statistics.INSTANCE.addToStat("hey_albuses");
 
 		if (!hasSaidHey && result != null) {
 			resultWithoutHey = result;

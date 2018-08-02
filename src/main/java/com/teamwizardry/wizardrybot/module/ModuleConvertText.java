@@ -4,6 +4,7 @@ import ai.api.model.Result;
 import com.google.common.base.Splitter;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -78,6 +79,7 @@ public class ModuleConvertText extends Module {
 					} else {
 						message.getChannel().sendMessage("```" + txt + "```");
 					}
+					Statistics.INSTANCE.addToStat("text_files_summarized");
 
 				} catch (IOException e) {
 					e.printStackTrace();

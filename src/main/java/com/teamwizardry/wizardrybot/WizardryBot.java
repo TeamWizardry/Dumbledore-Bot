@@ -227,8 +227,10 @@ public class WizardryBot {
 			else if (module.getPriority() > highestPriority.getPriority()) highestPriority = module;
 		}
 		if (highestPriority != null) {
-			if (highestPriority instanceof ICommandModule)
+			if (highestPriority instanceof ICommandModule) {
 				((ICommandModule) highestPriority).onCommand(api, message, command, result);
+				Statistics.INSTANCE.addToStat("commands_triggered");
+			}
 			highestPriority.onMessage(api, message, result, command);
 		}
 	}

@@ -181,6 +181,7 @@ public class ModuleMath extends Module implements ICommandModule {
 							.setImage((String) finalMap.get("url"))
 							.setUrl((String) finalMap.get("url"));
 					message.getChannel().sendMessage(builder);
+					Statistics.INSTANCE.addToStat("graphs_created");
 				} catch (IOException e) {
 					message.getChannel().sendMessage(e.getMessage());
 				}

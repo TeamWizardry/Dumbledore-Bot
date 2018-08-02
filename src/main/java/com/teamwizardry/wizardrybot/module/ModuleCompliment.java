@@ -4,6 +4,7 @@ import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -50,6 +51,7 @@ public class ModuleCompliment extends Module implements ICommandModule {
 
 		Random rand = new Random();
 
+		Statistics.INSTANCE.addToStat("compliments_given");
 		int random = rand.nextInt(3);
 		switch (random) {
 			case 0: {

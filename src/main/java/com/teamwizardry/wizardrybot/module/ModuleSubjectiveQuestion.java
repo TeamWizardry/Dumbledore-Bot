@@ -4,6 +4,7 @@ import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -95,14 +96,17 @@ public class ModuleSubjectiveQuestion extends Module implements ICommandModule {
 			Random rand = new Random(message.getContent().hashCode());
 			int random = rand.nextInt(yesNoResponses.size() - 1);
 			message.getChannel().sendMessage(yesNoResponses.get(random));
+			Statistics.INSTANCE.addToStat("subjective_questions_answered");
 		} else if (any != null && (any.contains("opb") || any.contains("opm") || (any.contains("one") && any.contains("punch") && any.contains("bot")) || any.contains("244168517396463616"))) {
 			Random rand = new Random(message.getContent().hashCode());
 			int random = rand.nextInt(opbResponses.size() - 1);
 			message.getChannel().sendMessage(opbResponses.get(random));
+			Statistics.INSTANCE.addToStat("subjective_questions_answered");
 		} else {
 			Random rand = new Random(message.getContent().hashCode());
 			int random = rand.nextInt(responses.size() - 1);
 			message.getChannel().sendMessage(responses.get(random));
+			Statistics.INSTANCE.addToStat("subjective_questions_answered");
 		}
 	}
 }

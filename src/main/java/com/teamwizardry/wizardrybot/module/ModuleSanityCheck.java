@@ -3,6 +3,7 @@ package com.teamwizardry.wizardrybot.module;
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import com.teamwizardry.wizardrybot.api.StringConstants;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -43,5 +44,6 @@ public class ModuleSanityCheck extends Module {
 
 		String reply = result.getFulfillment().getSpeech();
 		message.getChannel().sendMessage(reply);
+		Statistics.INSTANCE.addToStat("sanity_checks");
 	}
 }

@@ -79,8 +79,10 @@ public class ModuleAutoComplete extends Module implements ICommandModule {
 								carosal.putIfAbsent(command.getCommandArguments(), new ArrayList<>());
 								if (carosal.get(command.getCommandArguments()).isEmpty())
 									for (JsonElement element2 : secondArray) {
-										if (element2.isJsonPrimitive())
+										if (element2.isJsonPrimitive()) {
 											carosal.get(command.getCommandArguments()).add(element2.getAsString());
+											Statistics.INSTANCE.addToStat("auto_completes");
+										}
 									}
 							}
 							{
@@ -88,6 +90,7 @@ public class ModuleAutoComplete extends Module implements ICommandModule {
 									String s = Utils.processMentions(carosal.get(command.getCommandArguments()).remove(new Random().nextInt(carosal.get(command.getCommandArguments()).size() - 1)));
 									message.getChannel().sendMessage(s);
 									ModuleObjectiveQuestion.runLookup(message, s);
+									Statistics.INSTANCE.addToStat("auto_complete_lookups");
 								}
 							}
 							file.delete();

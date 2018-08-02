@@ -4,6 +4,7 @@ import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import com.vdurmont.emoji.EmojiManager;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -56,5 +57,6 @@ public class ModuleAboutSelf extends Module implements ICommandModule {
 						+ "You can invite me with this link to your server: " + api.createBotInvite() + "\n"
 						+ "And contact my maker here: https://discord.gg/wsk2PBR");
 		message.getChannel().sendMessage("", embed);
+		Statistics.INSTANCE.addToStat("times_asked_about_self");
 	}
 }

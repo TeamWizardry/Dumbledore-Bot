@@ -63,7 +63,7 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 			String txt = anyString.replace(" ", "_");
 
 			if (!tryWikipediaSearch(message, txt)) {
-				if (!tryMerriamSearch(message, txt))
+				if (!tryMerriamSearch(message, txt)) {
 					try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
 						Document doc = Document.newBuilder().setContent(anyString).setType(Document.Type.PLAIN_TEXT).build();
@@ -75,17 +75,20 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 									if (entity.getName().contains(" ")) {
 										for (String words : entity.getName().split(" ")) {
 											if (!tryWikipediaSearch(message, words)) {
-												tryMerriamSearch(message, words);
-											}
+												if (tryMerriamSearch(message, words))
+													Statistics.INSTANCE.addToStat("objective_questions_answered");
+												else Statistics.INSTANCE.addToStat("objective_questions_unanswered");
+											} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 										}
 									}
-								}
-							}
+								} else Statistics.INSTANCE.addToStat("objective_questions_answered");
+							} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-			}
+				} else Statistics.INSTANCE.addToStat("objective_questions_answered");
+			} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 
 		}));
 	}
@@ -279,7 +282,8 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 
 			if (!anySuccess) {
 				message.getChannel().sendMessage("I don't know what `" + any + "` is. Ask something similar.");
-			}
+				Statistics.INSTANCE.addToStat("objective_questions_unanswered");
+			} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 		}));
 	}
 }

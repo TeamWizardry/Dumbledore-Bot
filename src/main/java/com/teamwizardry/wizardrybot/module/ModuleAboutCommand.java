@@ -5,6 +5,7 @@ import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
@@ -82,6 +83,7 @@ public class ModuleAboutCommand extends Module implements ICommandModule {
 				embed.addField("Aliases", Arrays.toString(((ICommandModule) askingAbout).getAliases()), false);
 		}
 		message.getChannel().sendMessage("", embed);
+		Statistics.INSTANCE.addToStat("command_list_requested");
 
 	}
 }

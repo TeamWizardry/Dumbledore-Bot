@@ -206,6 +206,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 							Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
 							webhook.delete();
 						}));
+				Statistics.INSTANCE.addToStat("auto_corrections_made");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

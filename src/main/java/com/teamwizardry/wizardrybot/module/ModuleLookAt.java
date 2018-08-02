@@ -345,6 +345,7 @@ public class ModuleLookAt extends Module implements ICommandModule {
 
 						message.getChannel().sendMessage("Done! Took me " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - benchmark) + " seconds", builder);
 						file.delete();
+						Statistics.INSTANCE.addToStat("images_looked_at");
 					}
 
 				}

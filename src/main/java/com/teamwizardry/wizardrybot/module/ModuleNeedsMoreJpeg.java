@@ -116,6 +116,7 @@ public class ModuleNeedsMoreJpeg extends Module implements ICommandModule {
 						JsonObject data = imgur.getAsJsonObject("data");
 						if (data.has("link") && data.get("link").isJsonPrimitive()) {
 							message.getChannel().sendMessage(data.getAsJsonPrimitive("link").getAsString().replace("\\", ""));
+							Statistics.INSTANCE.addToStat("jpeged_images");
 						}
 					}
 				}

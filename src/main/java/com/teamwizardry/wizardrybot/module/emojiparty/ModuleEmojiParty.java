@@ -5,6 +5,7 @@ import com.google.common.collect.HashMultimap;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import com.vdurmont.emoji.EmojiManager;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.javacord.api.DiscordApi;
@@ -67,6 +68,7 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 				if (check < 4) {
 					message.getChannel().sendMessage(EmojiManager.getForAlias("tada").getUnicode() + "Correct!" + EmojiManager.getForAlias("tada").getUnicode());
 					games.remove(message.getChannel());
+					Statistics.INSTANCE.addToStat("emoji_games_won");
 				} else message.getChannel().sendMessage("Incorrect! Try again!");
 			}
 			return;
@@ -95,5 +97,6 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 		games.put(message.getChannel(), game);
 
 		message.getChannel().sendMessage("Alright! Guess the " + emojiGames.name().toLowerCase() + ":\n" + game.readableEmojiString);
+		Statistics.INSTANCE.addToStat("emoji_games_played");
 	}
 }

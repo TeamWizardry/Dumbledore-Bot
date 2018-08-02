@@ -1,10 +1,7 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.teamwizardry.wizardrybot.api.Command;
-import com.teamwizardry.wizardrybot.api.ICommandModule;
-import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.Utils;
+import com.teamwizardry.wizardrybot.api.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -142,11 +139,14 @@ public class ModuleEmotes extends Module implements ICommandModule {
 							Utils.sendWebhookMessage(webhook, finalEmote + " " + s, username, message.getAuthor().getAvatar().getUrl().toString());
 							webhook.delete();
 						}));
+				Statistics.INSTANCE.addToStat("emotes_used");
 			});
 
 		} else {
 			message.delete();
 			message.getChannel().sendMessage(emote + " " + command.getCommandArguments());
+
+			Statistics.INSTANCE.addToStat("emotes_used");
 		}
 	}
 }
