@@ -9,7 +9,6 @@ import com.teamwizardry.wizardrybot.api.Utils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.joda.time.DateTime;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.File;
 import java.io.FileReader;
@@ -112,25 +111,17 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 		try {
 			JsonElement jsonElement = new JsonParser().parse(new FileReader(file));
 			if (jsonElement.isJsonNull()) {
-				jsonElement = new JsonObject();
+				jsonElement = new JsonArray();
 			}
-			if (!jsonElement.isJsonObject()) return;
-			JsonObject object = jsonElement.getAsJsonObject();
-
-			JsonArray array;
-			if (object.has("list") && object.get("list").isJsonArray()) {
-				array = object.getAsJsonArray("list");
-			} else {
-				array = new JsonArray();
-				object.add("list", array);
-			}
+			if (!jsonElement.isJsonArray()) return;
+			JsonArray array = jsonElement.getAsJsonArray();
 
 			int count = 0;
 			for (JsonElement element : array) {
 				if (element.isJsonObject()) {
 					JsonObject object1 = element.getAsJsonObject();
 					if (object1.has("user") && object1.get("user").isJsonPrimitive()) {
-						if (object1.getAsJsonPrimitive("user").getAsString().equals(message.getAuthor().getId()))
+						if (Utils.checkHashMatch(message.getAuthor().getIdAsString(), object1.getAsJsonObject("user")))
 							count++;
 					}
 				}
@@ -147,7 +138,7 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 			}
 
 			JsonObject object1 = new JsonObject();
-			object1.addProperty("user", BCrypt.hashpw(String.valueOf(message.getAuthor().getId()), BCrypt.gensalt()));
+			object1.add("user", Utils.encryptString(message.getAuthor().getIdAsString()));
 			if (message.getChannel() != null)
 				object1.addProperty("channel", message.getChannel().getId() + "@" + message.getServer().get().getId());
 			object1.addProperty("time", finalDate.getMillis());

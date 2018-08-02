@@ -1,7 +1,12 @@
 package com.teamwizardry.wizardrybot.module.correct;
 
 import ai.api.model.Result;
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.internal.Streams;
+import com.google.gson.stream.JsonWriter;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
@@ -13,14 +18,20 @@ import org.javacord.api.entity.user.User;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Optional;
 
 
 public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 
 	private String username = null;
+
+	@Override
+	public boolean overrideResponseCheck() {
+		return true;
+	}
 
 	@Override
 	public String getName() {
@@ -54,45 +65,55 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (!command.hasSaidHey()) return;
+
 		File file = new File("autocorrect.json");
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
-			} catch (IOException ignored) {
+			} catch (IOException e) {
+				e.printStackTrace();
 				message.getChannel().sendMessage("I'm experiencing difficulty rn. Sorry.");
 			}
 		}
-		User autocorrectUser = null;
 		if (file.exists()) {
 			try {
 				JsonElement element = new JsonParser().parse(new FileReader(file));
-				if (element.isJsonNull()) element = new JsonObject();
-				JsonObject object = element.getAsJsonObject();
-				JsonArray array;
+				if (!element.isJsonArray()) element = new JsonArray();
 
-				if (!object.has("users") || !object.get("users").isJsonArray()) array = new JsonArray();
-				else array = object.getAsJsonArray("users");
+				JsonArray array = element.getAsJsonArray();
+				User autocorrectUser = null;
 
-				JsonElement userElement = null;
-				for (JsonElement element1 : array) {
-					if (element1.isJsonPrimitive()) {
-						User user = Utils.lookupUserFromHash(element1.getAsJsonPrimitive().getAsString(), message.getChannel());
+				JsonObject userObject = null;
+				for (JsonElement object : array) {
+					if (object.isJsonObject()) {
+						User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
 						if (user == null) continue;
-						userElement = element1;
+						userObject = object.getAsJsonObject();
 						autocorrectUser = user;
 						break;
 					}
 				}
 				if (autocorrectUser == null) {
-					array.add(Utils.encrypt(String.valueOf(message.getAuthor().getId())));
-					FileWriter writer = new FileWriter(file);
-					writer.write(new Gson().toJson(object));
-					writer.flush();
+					array.add(Utils.encryptString(message.getAuthor().getIdAsString()));
+					try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(file.toPath()))) {
+						Streams.write(array, writer);
+						message.getChannel().sendMessage("You will now be autocorrected");
+					} catch (IOException e) {
+						e.printStackTrace();
+						message.getChannel().sendMessage("Something went wrong...");
+						message.getChannel().sendMessage("```" + Arrays.toString(e.getStackTrace()) + "```");
+					}
 				} else {
-					array.remove(userElement);
-					FileWriter writer = new FileWriter(file);
-					writer.write(new Gson().toJson(object));
-					writer.flush();
+					array.remove(userObject);
+					try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(file.toPath()))) {
+						Streams.write(array, writer);
+						message.getChannel().sendMessage("You will no longer be autocorrected");
+					} catch (IOException e) {
+						e.printStackTrace();
+						message.getChannel().sendMessage("Something went wrong...");
+						message.getChannel().sendMessage("```" + Arrays.toString(e.getStackTrace()) + "```");
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -103,6 +124,8 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 
 	@Override
 	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
+		if (command.hasSaidHey()) return;
+
 		ThreadManager.INSTANCE.addThread(new Thread(() -> {
 			File file = new File("autocorrect.json");
 			if (!file.exists()) {
@@ -115,16 +138,13 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 			if (file.exists()) {
 				try {
 					JsonElement element = new JsonParser().parse(new FileReader(file));
-					if (element.isJsonNull()) element = new JsonObject();
-					JsonObject object = element.getAsJsonObject();
-					JsonArray array;
+					if (!element.isJsonArray()) element = new JsonArray();
 
-					if (!object.has("users") || !object.get("users").isJsonArray()) array = new JsonArray();
-					else array = object.getAsJsonArray("users");
+					JsonArray array = element.getAsJsonArray();
 
-					for (JsonElement element1 : array) {
-						if (element1.isJsonPrimitive()) {
-							User user = Utils.lookupUserFromHash(element1.getAsJsonPrimitive().getAsString(), message.getChannel());
+					for (JsonElement object : array) {
+						if (object.isJsonObject()) {
+							User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
 							if (user == null) continue;
 							autoCorrect = true;
 							break;
@@ -190,7 +210,6 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 				if (!probablyUser.isPresent()) return;
 				User user = probablyUser.get();
 
-				String s = Utils.processMentions(command.getCommandArguments().replace("me", "").trim());
 				message.getServer().ifPresent(server -> {
 					Optional<String> nick = server.getNickname(user);
 					username = nick.orElseGet(() -> user.getDisplayName(server));

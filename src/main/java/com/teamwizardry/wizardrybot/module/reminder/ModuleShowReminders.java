@@ -75,26 +75,17 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 
 		try {
 			JsonElement jsonElement = new JsonParser().parse(new FileReader(file));
-			if (jsonElement.isJsonNull()) {
-				jsonElement = new JsonObject();
+			if (!jsonElement.isJsonArray()) {
+				jsonElement = new JsonArray();
 			}
-			if (!jsonElement.isJsonObject()) return;
-			JsonObject object = jsonElement.getAsJsonObject();
-
-			JsonArray array;
-			if (object.has("list") && object.get("list").isJsonArray()) {
-				array = object.getAsJsonArray("list");
-			} else {
-				message.getChannel().sendMessage("You don't have any reminders you silly goof.");
-				return;
-			}
+			JsonArray array = jsonElement.getAsJsonArray();
 
 			Set<JsonObject> objects = new HashSet<>();
 			for (JsonElement element : array) {
 				if (!element.isJsonObject()) continue;
 				JsonObject object1 = element.getAsJsonObject();
-				if (!object1.has("user") || !object1.get("user").isJsonPrimitive()) continue;
-				User user = Utils.lookupUserFromHash(object1.getAsJsonPrimitive("user").getAsString());
+				if (!object1.has("user") || !object1.get("user").isJsonObject()) continue;
+				User user = Utils.lookupUserFromHash(object1.getAsJsonObject("user"), api);
 				if (user == null) continue;
 				objects.add(object1);
 			}

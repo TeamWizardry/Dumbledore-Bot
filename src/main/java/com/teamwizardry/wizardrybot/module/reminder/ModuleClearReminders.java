@@ -89,8 +89,8 @@ public class ModuleClearReminders extends Module implements ICommandModule {
 			for (JsonElement element : array) {
 				if (!element.isJsonObject()) continue;
 				JsonObject object1 = element.getAsJsonObject();
-				if (!object1.has("user") || !object1.get("user").isJsonPrimitive()) continue;
-				User user = Utils.lookupUserFromHash(object1.getAsJsonPrimitive("user").getAsString());
+				if (!object1.has("user") || !object1.get("user").isJsonObject()) continue;
+				User user = Utils.lookupUserFromHash(object1.getAsJsonObject("user"), api);
 				if (user == null) continue;
 				objects.add(object1);
 			}

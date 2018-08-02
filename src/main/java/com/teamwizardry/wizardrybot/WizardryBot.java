@@ -196,6 +196,8 @@ public class WizardryBot {
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
 			if (shouldRespond || module.overrideResponseCheck()) {
+				module.onMessage(api, message, result, command);
+				
 				if (module instanceof ICommandModule) {
 
 					ICommandModule moduleCmd = (ICommandModule) module;
@@ -216,8 +218,6 @@ public class WizardryBot {
 							}
 						} else priorityList.add(module);
 					}
-				} else {
-					module.onMessage(api, message, result, command);
 				}
 			}
 		}

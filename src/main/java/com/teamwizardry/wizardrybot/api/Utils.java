@@ -5,8 +5,11 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
+import kotlin.Pair;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.util.text.BasicTextEncryptor;
+import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAttachment;
@@ -15,7 +18,6 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.entity.webhook.Webhook;
 import org.jetbrains.annotations.Nullable;
-import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -168,9 +170,21 @@ public class Utils {
 	}
 
 	@Nullable
-	public static User lookupUserFromHash(String hash, Channel channel) {
+	public static User lookupUserFromHash(JsonObject object, DiscordApi api) {
+		for (Server server : api.getServers()) {
+			for (User user : server.getMembers()) {
+				if (checkHashMatch(user.getIdAsString(), object)) {
+					return user;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	public static User lookupUserFromHash(JsonObject object, Channel channel) {
 		for (User user : channel.getApi().getServerChannelById(channel.getId()).get().getServer().getMembers()) {
-			if (BCrypt.checkpw(String.valueOf(user.getId()), hash)) {
+			if (checkHashMatch(user.getIdAsString(), object)) {
 				return user;
 			}
 		}
@@ -178,14 +192,66 @@ public class Utils {
 	}
 
 	@Nullable
-	public static User lookupUserFromHash(String hash) {
+	public static User lookupUserFromHash(String hash, String salt, Channel channel) {
+		for (User user : channel.getApi().getServerChannelById(channel.getId()).get().getServer().getMembers()) {
+			if (checkHashMatch(user.getIdAsString(), hash, salt)) {
+				return user;
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	public static User lookupUserFromHash(String hash, String salt) {
 		for (Server server : WizardryBot.API.getServers())
 			for (User user : server.getMembers()) {
-				if (BCrypt.checkpw(String.valueOf(user.getId()), hash)) {
+				if (checkHashMatch(user.getIdAsString(), hash, salt)) {
 					return user;
 				}
 			}
 		return null;
+	}
+
+	public static boolean checkHashMatch(String plainText, JsonObject object) {
+		Pair<byte[], byte[]> hashSalt = getHashSalt(object);
+		if (hashSalt == null) return false;
+		return checkHashMatch(plainText, hashSalt);
+	}
+
+	public static boolean checkHashMatch(String plainText, Pair<byte[], byte[]> pair) {
+		return checkHashMatch(plainText, pair.getFirst(), pair.getSecond());
+	}
+
+	public static boolean checkHashMatch(String plainText, String hash, String salt) {
+		return checkHashMatch(plainText, salt.getBytes(), hash.getBytes());
+	}
+
+	public static boolean checkHashMatch(String plainText, byte[] hash, byte[] salt) {
+		return Crypto.isExpectedPassword(plainText.toCharArray(), salt, hash);
+	}
+
+	@Nullable
+	public static Pair<byte[], byte[]> getHashSalt(JsonObject object) {
+		if (!object.has("salt") || !object.has("hash")) return null;
+
+		byte[] salt = Base64.decodeBase64(object.getAsJsonPrimitive("salt").getAsString());
+		byte[] hash = Base64.decodeBase64(object.getAsJsonPrimitive("hash").getAsString());
+
+		return new Pair<>(hash, salt);
+	}
+
+	public static JsonObject encryptString(User user) {
+		return encryptString(user.getIdAsString());
+	}
+
+	public static JsonObject encryptString(String string) {
+		JsonObject object = new JsonObject();
+		byte[] saltBytes = Crypto.getNextSalt();
+		String salt = Base64.encodeBase64String(saltBytes);
+		object.addProperty("salt", salt);
+		object.addProperty("hash", Base64.encodeBase64String(Crypto.hash(string.toCharArray(), saltBytes)));
+
+		return object;
 	}
 
 	public static String encrypt(String string) {

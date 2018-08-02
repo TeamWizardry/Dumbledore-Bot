@@ -65,26 +65,27 @@ public class RemindMeRunnable implements Runnable {
 									&& reminder.has("reminder")
 									&& reminder.get("reminder").isJsonPrimitive()
 									&& reminder.has("user")
-									&& reminder.get("user").isJsonPrimitive()
+									&& reminder.get("user").isJsonObject()
 									&& reminder.has("origin_time")
 									&& reminder.get("origin_time").isJsonPrimitive()) {
 								String message = Utils.decrypt(reminder.getAsJsonPrimitive("reminder").getAsString());
 								DateTime time = new DateTime(reminder.getAsJsonPrimitive("time").getAsLong());
 								long originTime = reminder.getAsJsonPrimitive("origin_time").getAsLong();
-								String userString = reminder.getAsJsonPrimitive("user").getAsString();
+								JsonObject userObject = reminder.getAsJsonObject("user");
 
-								final Channel[] channel = {null};
-								final Server[] server = {null};
+								Channel channel = null;
+								Server server = null;
 								if (reminder.has("channel")) {
 									String channelString = reminder.getAsJsonPrimitive("channel").getAsString();
 									String[] parts = channelString.split("@");
-									WizardryBot.API.getChannelById(parts[0]).ifPresent(channel1 -> channel[0] = channel1);
-									WizardryBot.API.getServerById(parts[1]).ifPresent(server1 -> server[0] = server1);
+									channel = WizardryBot.API.getChannelById(parts[0]).get();
+									server = WizardryBot.API.getServerById(parts[1]).get();
 								}
+								if (channel == null) return;
 
 								try {
 									if (time.getMillis() - System.currentTimeMillis() <= 0) {
-										User user = Utils.lookupUserFromHash(userString);
+										User user = Utils.lookupUserFromHash(userObject, channel);
 										if (user != null) {
 
 											String or;
@@ -99,23 +100,14 @@ public class RemindMeRunnable implements Runnable {
 												} else or = TimeUnit.MILLISECONDS.toMinutes(difference) + " minutes";
 											} else or = TimeUnit.MILLISECONDS.toSeconds(difference) + " seconds";
 
-											if (channel[0] == null) {
-												user.sendMessage("Hello! You told me to remind you "
-														+ "`" + or + "` ago"
-														+ " about the following:\n"
-														+ "```"
-														+ message
-														+ "```");
-											} else {
-												channel[0].asTextChannel().ifPresent(textChannel -> textChannel.sendMessage(
-														user.getMentionTag()
-														+ " Hey! You told me to remind you "
-														+ "`" + or + "` ago"
-														+ " about the following:\n"
-														+ "```"
-														+ message
-																+ "```"));
-											}
+											channel.asTextChannel().ifPresent(textChannel -> textChannel.sendMessage(
+													user.getMentionTag()
+															+ " Hey! You told me to remind you "
+															+ "`" + or + "` ago"
+															+ " about the following:\n"
+															+ "```"
+															+ message
+															+ "```"));
 										}
 
 										array.remove(element);
