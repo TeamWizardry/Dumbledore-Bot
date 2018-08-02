@@ -61,7 +61,7 @@ public class ModuleShell extends Module implements ICommandModule {
 
 			message.getChannel().sendMessage("Executing...");
 
-			if (command.getCommandArguments().contains("sh") || command.getCommandArguments().contains("botlaunch")) {
+			if (command.getCommandArguments().contains("start.sh")) {
 				File file = new File("amRestarting.json");
 				if (!file.exists()) {
 					try {
