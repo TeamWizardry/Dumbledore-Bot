@@ -172,6 +172,7 @@ public class WizardryBot {
 
 		ThreadManager.INSTANCE.tick();
 
+		Statistics.INSTANCE.addToStat("messages_analyzed");
 		Command command = new Command(message, commands);
 		String after = command.getCommandArguments();
 		Result result = (command.hasSaidHey() && command.getResultWithoutHey() == null) ? (after.isEmpty() ? null : AI.INSTANCE.think(Utils.processMentions(after))) : command.getResultWithoutHey();
