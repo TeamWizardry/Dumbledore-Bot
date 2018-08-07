@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ModuleConvertText extends Module {
@@ -73,7 +74,7 @@ public class ModuleConvertText extends Module {
 						message.getChannel().sendMessage("SUMMARY:");
 						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
 					} else if (txt.length() > 1500) {
-						List<String> splits = Splitter.fixedLength(1500).splitToList(txt);
+						List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(txt));
 						while(splits.size() > 5) {
 							splits.remove(0);
 						}
