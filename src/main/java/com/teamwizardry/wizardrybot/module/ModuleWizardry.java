@@ -59,7 +59,13 @@ public class ModuleWizardry extends Module implements ICommandModule {
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 
 		final boolean[] helped = {false};
-		message.getChannel().getMessagesAsStream().limit(5).forEach(message1 -> {
+		message.getChannel().getMessagesAsStream().limit(5).filter(message12 -> {
+			boolean[] b = new boolean[]{true};
+			message12.getUserAuthor().ifPresent(user -> {
+				if (user.isBot() || user.getId() == message12.getAuthor().getId()) b[0] = false;
+			});
+			return b[0];
+		}).forEach(message1 -> {
 			String content = message1.getContent();
 			if (content.length() >= 255) content = content.substring(0, 254);
 
