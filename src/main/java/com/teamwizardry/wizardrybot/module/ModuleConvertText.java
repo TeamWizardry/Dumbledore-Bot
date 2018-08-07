@@ -74,6 +74,9 @@ public class ModuleConvertText extends Module {
 						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
 					} else if (txt.length() > 1500) {
 						List<String> splits = Splitter.fixedLength(1500).splitToList(txt);
+						while(splits.size() > 5) {
+							splits.remove(0);
+						}
 						for (String string : splits)
 							message.getChannel().sendMessage("```" + string + "```");
 					} else {
