@@ -52,7 +52,7 @@ public class ModuleGif extends Module implements ICommandModule {
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 
 		try {
-			HttpResponse<JsonNode> response = Unirest.get("https://api.tenor.com/v1/search?q=" + command.getCommandArguments().replace(" ", "_") + "&key=5TU1160NKPSY&limit=5").asJson();
+			HttpResponse<JsonNode> response = Unirest.get("https://api.tenor.com/v1/search?q=" + command.getCommandArguments().replace(" ", "_") + "&key=5TU1160NKPSY&limit=20").asJson();
 
 			JsonObject object = (JsonObject) new JsonParser().parse(response.getBody().toString());
 
