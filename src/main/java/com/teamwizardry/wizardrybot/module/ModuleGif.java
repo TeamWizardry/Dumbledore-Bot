@@ -81,7 +81,6 @@ public class ModuleGif extends Module implements ICommandModule {
 
 								if (gifObj.has("url") && gifObj.get("url").isJsonPrimitive()) {
 									message.getChannel().sendMessage(gifObj.getAsJsonPrimitive("url").getAsString());
-									message.delete();
 								}
 							}
 						}
