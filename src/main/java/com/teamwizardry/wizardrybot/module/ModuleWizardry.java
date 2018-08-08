@@ -1,17 +1,9 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.teamwizardry.wizardrybot.api.Command;
-import com.teamwizardry.wizardrybot.api.ICommandModule;
-import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.WizardryAI;
+import com.teamwizardry.wizardrybot.api.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
-import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.user.User;
-
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 public class ModuleWizardry extends Module implements ICommandModule {
 
@@ -88,6 +80,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 
 					message1.getChannel().sendMessage("Please give us your crash report. Go to your crashes folder and give us the latest txt file here.");
 					message1.getChannel().sendMessage("In any case, be sure you UPDATED both Wizardry AND LibrarianLib to the latest version!");
+					Statistics.INSTANCE.addToStat("wizardry_crashes_helped_with");
 					break;
 				case "input.problems":
 					if (result1.getScore() >= 0.9)
@@ -100,6 +93,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 					}
 
 					message1.getChannel().sendMessage("Please tell me what your problem in a short and clear way. Are you experiencing crashes? Having trouble crafting spells? Can't figure out your mana? Can't cast spells? Ask away.");
+					Statistics.INSTANCE.addToStat("wizardry_problems_asked_about");
 					break;
 				case "input.cant_build_structure":
 
@@ -115,6 +109,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 					message1.getChannel().sendMessage("- The white blocks in the structures are quartz blocks. We might be changing the quartz to Nacre blocks in future version of the mod, but for now, the blocks are all pure vanilla QUARTZ.");
 					message1.getChannel().sendMessage("- If you don't know how to build or finish the structure, right click the main block (crafting plate or mana battery, etc) and you will see the structure's highlight in the world clearly.");
 					message1.getChannel().sendMessage("- If you see red dots, that means the block where the red dot is is NOT correct. You placed the WRONG block there.");
+					Statistics.INSTANCE.addToStat("wizardry_structure_building_problems_helped_with");
 					break;
 				case "input.no_mana":
 					if (result1.getScore() >= 0.9)
@@ -130,7 +125,8 @@ public class ModuleWizardry extends Module implements ICommandModule {
 					message1.getChannel().sendMessage("- If your mana bar is empty, inject yourself with mana syringes to fill yourself up.");
 					message1.getChannel().sendMessage("- If your mana depletes too fast, then UPDATE THE MOD to the LATEST version. Spell costs have been heavily reduced.");
 					message1.getChannel().sendMessage("- If you hate having to inject yourself with mana so much, craft yourself a real Halo. It's recipe is TEMPORARY and will be removed in future version but it will automatically regenerate mana.");
-					message1.getChannel().sendMessage("- Be sure you're wearing a cape! It will reduce spell costs the longer you wear it.");
+					message1.getChannel().sendMessage("wizardry_mana_problems_helped_with");
+					Statistics.INSTANCE.addToStat("wizardry_crashes_helped_with");
 					break;
 				case "input.mana_orbs_shattering":
 					if (result1.getScore() >= 0.9)
@@ -144,6 +140,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 
 					message1.getChannel().sendMessage("- The mana orbs are SUPPOSED to shatter in the battery. It means the mana was successfully sucked into the Mana Battery!");
 					message1.getChannel().sendMessage("- If the orbs no longer shatter and the Mana Battery begins violently shaking, it means that your battery is completely full of mana.");
+					Statistics.INSTANCE.addToStat("wizardry_mana_orb_problems_helped_with");
 					break;
 				case "input.spell_not_working":
 					if (result1.getScore() >= 0.9)
@@ -162,6 +159,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 					message1.getChannel().sendMessage("- If all the above aren't fixing it, then your spell might be too expensive to cast simply.");
 					message1.getChannel().sendMessage("- If you're 100% POSITIVE you can afford your spell, take a screenshot of your staff's tooltip and post it here.");
 
+					Statistics.INSTANCE.addToStat("wizardry_dysfunctional_spells_helped_with");
 					break;
 				case "input.spell_not_crafting":
 					if (result1.getScore() >= 0.9)
@@ -178,9 +176,11 @@ public class ModuleWizardry extends Module implements ICommandModule {
 					message1.getChannel().sendMessage("- Be sure to throw a Nacre Pearl once you finish adding all the spell recipe items required to begin the crafting.");
 					message1.getChannel().sendMessage("- If crafting just pauses or stops, add more mana to your altar or battery via mana orbs in the pearl holders.");
 					message1.getChannel().sendMessage("- If the orbs no longer shatter and the Mana Battery begins violently shaking, it means that your battery is completely full of mana.");
+					Statistics.INSTANCE.addToStat("wizardry_spell_craftings_helped_with");
 					break;
 				default:
 					message1.getChannel().sendMessage("I have no idea what you're problem is.");
+					Statistics.INSTANCE.addToStat("wizardry_no_idea_about_problems");
 					break;
 			}
 		});
