@@ -54,7 +54,8 @@ public class ModuleAboutSelf extends Module implements ICommandModule {
 						+ "Ask me 'hey albus, what can you do?' so I can tell you about all my abilities, young wizard!\n"
 						+ "Some things I can do: I can analyze images and tell you what's or who's in them, I can define words, I can look something up on wikipedia, I can remind you of something, I can even draw functions for you, and so much more!\n"
 						+ "Take a look at my brain here: https://github.com/TeamWizardry/Dumbledore-Bot\n"
-						+ "You can invite me with this link to your server: " + "https://discordapp.com/oauth2/authorize?client_id=345233067431952384&scope=bot&permissions=2080767089" + "\n"
+						+ "You can invite me with this link to your server: "
+						+ "https://discordapp.com/oauth2/authorize?client_id=348507550058283019&scope=bot&permissions=2080767089" + "\n"
 						+ "And contact my maker here: https://discord.gg/wsk2PBR");
 		message.getChannel().sendMessage("", embed);
 		Statistics.INSTANCE.addToStat("times_asked_about_self");
