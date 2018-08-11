@@ -5,6 +5,8 @@ import com.google.common.base.Splitter;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.Module;
 import com.teamwizardry.wizardrybot.api.Statistics;
+import com.teamwizardry.wizardrybot.api.Utils;
+import com.teamwizardry.wizardrybot.api.paste.TextLinkExtractor;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -14,8 +16,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ModuleConvertText extends Module {
 
@@ -51,8 +55,6 @@ public class ModuleConvertText extends Module {
 
 	@Override
 	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
-		if (message.getAttachments().isEmpty()) return;
-
 		for (MessageAttachment attachment : message.getAttachments()) {
 			if (attachment.isImage()) continue;
 			if (attachment.getFileName().contains("txt") || attachment.getFileName().contains("log")) {
@@ -75,7 +77,7 @@ public class ModuleConvertText extends Module {
 						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
 					} else if (txt.length() > 1500) {
 						List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(txt));
-						while(splits.size() > 5) {
+						while (splits.size() > 5) {
 							splits.remove(0);
 						}
 						for (String string : splits)
@@ -90,6 +92,28 @@ public class ModuleConvertText extends Module {
 				}
 			}
 		}
-	}
 
+		Set<URL> urls = Utils.findURLsInString(message.getContent());
+		if (urls.isEmpty()) return;
+
+		for (URL url : urls) {
+			String text = TextLinkExtractor.getText(url);
+			if (text == null || text.isEmpty()) continue;
+
+			if (text.contains("Time: ") && text.contains("at net.minecraft")) {
+				message.getChannel().sendMessage("SUMMARY:");
+				message.getChannel().sendMessage("```" + StringUtils.substringBetween(text, "Time: ", "at net.minecraft") + "```");
+			} else if (text.length() > 1500) {
+				List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(text));
+				while (splits.size() > 5) {
+					splits.remove(0);
+				}
+				for (String string : splits)
+					message.getChannel().sendMessage("```" + string + "```");
+			} else {
+				message.getChannel().sendMessage("```" + text + "```");
+			}
+			Statistics.INSTANCE.addToStat("text_files_summarized");
+		}
+	}
 }

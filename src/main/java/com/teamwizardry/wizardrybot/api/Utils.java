@@ -19,14 +19,13 @@ import org.javacord.api.entity.user.User;
 import org.javacord.api.entity.webhook.Webhook;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class Utils {
@@ -272,6 +271,18 @@ public class Utils {
 		NetworkInterface networkInterface = NetworkInterface.getByInetAddress(address);
 
 		return networkInterface.getHardwareAddress();
+	}
+
+	@Nonnull
+	public static Set<URL> findURLsInString(String string) {
+		Set<URL> urls = new HashSet<>();
+		for (String word : string.split(" ")) {
+			try {
+				urls.add(new URL(word));
+			} catch (MalformedURLException ignored) {
+			}
+		}
+		return urls;
 	}
 
 	@Nullable
