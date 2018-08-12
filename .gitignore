@@ -9,4 +9,7 @@ remind_me.json
 bfg.jar
 dependency-reduced-pom.xml
 /dev_mode
-src/main/resources/
+/bin/
+/stats.json
+/timezones.txt
+/timezones-348507228380332032
