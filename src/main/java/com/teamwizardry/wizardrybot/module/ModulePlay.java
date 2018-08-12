@@ -78,6 +78,8 @@ public class ModulePlay extends Module implements ICommandModule {
 					if (!element.isJsonObject()) return;
 					JsonObject object = element.getAsJsonObject();
 
+					System.out.println(object.toString());
+
 					if (object.has("items") && object.get("items").isJsonArray()) {
 						for (JsonElement itemElement : object.getAsJsonArray("items")) {
 							if (!itemElement.isJsonObject()) continue;
@@ -107,7 +109,10 @@ public class ModulePlay extends Module implements ICommandModule {
 					e.printStackTrace();
 				}
 
-				if (videoId == null || title == null) return;
+				if (videoId == null || title == null) {
+					message.getChannel().sendMessage("No video found.");
+					return;
+				}
 
 				if (WizardryBot.ffmpegExe == null || WizardryBot.ffProbe == null) {
 					message.getChannel().sendMessage("Ffmpeg could not be found. Yell at my maker.");
@@ -128,6 +133,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					File audio = new File(downloadDir, title + ".webm");
 
 					if (!audio.exists()) {
+						System.out.println("Downloading " + title);
 
 						File bin = new File("bin/youtube-dl.exe");
 						YoutubeDL.setExecutablePath(bin.getAbsolutePath());
@@ -142,11 +148,12 @@ public class ModulePlay extends Module implements ICommandModule {
 
 					File findAudio = findFileContainingName(downloadDir, title);
 
-					if (findAudio == null) return;
+					if (findAudio == null) {
+						message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
+						return;
+					}
 					if (!audio.getName().equals(findAudio.getName())) {
 						findAudio.renameTo(audio);
-
-						//	audio = findAudio;
 					}
 
 					FFmpeg ffmpeg = new FFmpeg(WizardryBot.ffmpegExe.getPath());
