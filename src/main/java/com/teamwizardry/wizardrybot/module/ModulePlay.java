@@ -1,6 +1,7 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
+import com.google.common.base.CharMatcher;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -28,9 +29,14 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.Normalizer;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 public class ModulePlay extends Module implements ICommandModule {
+
+	private static final CharMatcher ALNUM = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('A', 'Z')).or(CharMatcher.inRange('0', '9')).precomputed();
+	private static final Pattern DIACRITICS_AND_FRIENDS = Pattern.compile("[\\p{InCombiningDiacriticalMarks}\\p{IsLm}\\p{IsSk}]+");
 
 	@Override
 	public String getName() {
@@ -55,6 +61,36 @@ public class ModulePlay extends Module implements ICommandModule {
 	@Override
 	public boolean overrideResponseCheck() {
 		return true;
+	}
+
+	private static String stripDiacritics(String str) {
+		str = Normalizer.normalize(str, Normalizer.Form.NFD);
+		str = DIACRITICS_AND_FRIENDS.matcher(str).replaceAll("");
+		return str;
+	}
+
+	@Override
+	public String getActionID() {
+		return "input.play";
+	}
+
+	@Override
+	public String[] getAliases() {
+		return new String[0];
+	}
+
+	@Nullable
+	private File findFileContainingName(File dir, String substring) {
+
+		if (dir.exists() && dir.isDirectory()) {
+			File[] files = dir.listFiles(); //get the files in String format.
+			for (File file : files) {
+				if (file.getName().contains(substring))
+					return file;
+			}
+		}
+
+		return null;
 	}
 
 	@Override
@@ -113,6 +149,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					message.getChannel().sendMessage("No video found.");
 					return;
 				}
+				title = ALNUM.retainFrom(stripDiacritics(title));
 
 				if (WizardryBot.ffmpegExe == null || WizardryBot.ffProbe == null) {
 					message.getChannel().sendMessage("Ffmpeg could not be found. Yell at my maker.");
@@ -194,29 +231,5 @@ public class ModulePlay extends Module implements ICommandModule {
 			}
 		});
 		thread.start();
-	}
-
-	@Override
-	public String getActionID() {
-		return "input.play";
-	}
-
-	@Override
-	public String[] getAliases() {
-		return new String[0];
-	}
-
-	@Nullable
-	private File findFileContainingName(File dir, String substring) {
-
-		if (dir.exists() && dir.isDirectory()) {
-			File[] files = dir.listFiles(); //get the files in String format.
-			for (File file : files) {
-				if (file.getName().contains(substring))
-					return file;
-			}
-		}
-
-		return null;
 	}
 }
