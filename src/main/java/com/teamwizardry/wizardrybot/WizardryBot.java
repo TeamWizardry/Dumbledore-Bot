@@ -2,7 +2,6 @@ package com.teamwizardry.wizardrybot;
 
 
 import ai.api.model.Result;
-import com.cloudinary.Cloudinary;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -17,12 +16,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
@@ -34,19 +33,12 @@ public class WizardryBot {
 
 	public static WizardryBot wizardryBot;
 	public static DiscordApi API;
-	public static BufferedImage currentAvatar;
-	public static String currentUsername;
-	public static Cloudinary cloudinary;
 
 	public static ArrayList<Module> modules = new ArrayList<>();
 	private static HashSet<String> commands = new HashSet<>();
 	private static HashSet<Channel> heyAlbused = new HashSet<>();
 
 	public static float THINKTHRESHHOLD = 0.85f;
-
-	public static URL domains;
-
-	public static boolean DEV_MODE = false;
 
 	@Nullable
 	public static File ffmpegExe = null;
@@ -78,91 +70,118 @@ public class WizardryBot {
 	}
 
 	private static void init(DiscordApi api, WizardryBot wizardryBot) {
-		Thread domainThread = new Thread(() -> {
-			try {
-				domains = new URL("https://raw.githubusercontent.com/TeamWizardry/Dumbledore-Bot/master/domains.txt");
 
-				Domains.INSTANCE.getClass();
-			} catch (
-					MalformedURLException e) {
-				e.printStackTrace();
-			}
-		});
+		// INSTALLERS
+		{
+			System.out.println("<<------------------------------------------------------------------------>>");
+			File binDir = new File("bin/");
 
-		domainThread.start();
-
-		Thread ffmpegDownloader = new Thread(() -> {
-			File ffmpegDir = new File("ffmpeg/");
-			if (!ffmpegDir.exists()) ffmpegDir.mkdirs();
-
-			File ffmpegZip = new File(ffmpegDir, "ffmpegZip.zip");
-			File ffmpegExtractDir = new File(ffmpegDir, "ffmpeg-4.0.2-win64-static");
-
-			if (!ffmpegZip.exists()) {
+			{
 				try {
-					System.out.println("ffmpeg does not exist! Downloading...");
-					URL urlObject = new URL("https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0.2-win64-static.zip");
-					URLConnection urlConnection = urlObject.openConnection();
-					urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
+					File domainsFile = new File(binDir, "domains.txt");
 
-					try (InputStream in = urlConnection.getInputStream()) {
-						Files.copy(in, ffmpegZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					if (!domainsFile.exists()) {
+						System.out.println("domains whitelist does not exist! Downloading...");
 
-						ZipFile zipFile = new ZipFile(ffmpegZip.getPath());
-						zipFile.extractAll(ffmpegDir.getPath());
-					} catch (ZipException e) {
-						e.printStackTrace();
+						URL urlObject = new URL("https://paste.ee/r/XGYeP");
+						URLConnection urlConnection = urlObject.openConnection();
+						urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
+
+						try (InputStream in = urlConnection.getInputStream()) {
+							Files.copy(in, domainsFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+							System.out.println("Successfully downloaded domains whitelist!");
+						}
+
 					}
 
+					if (!domainsFile.exists()) {
+						Domains.INSTANCE.init();
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 
-			if (!ffmpegExtractDir.exists()) {
-				System.out.println("Could not download ffmpeg!! REEEEEEEEE");
+			{
+				File ffmpegDir = new File(binDir, "ffmpeg/");
+				if (!ffmpegDir.exists()) ffmpegDir.mkdirs();
+
+				File ffmpegZip = new File(ffmpegDir, "ffmpegZip.zip");
+				File ffmpegExtractDir = new File(ffmpegDir, "ffmpeg-4.0.2-win64-static");
+
+				if (!ffmpegZip.exists()) {
+					try {
+						System.out.println("ffmpeg does not exist! Downloading...");
+						URL urlObject = new URL("https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0.2-win64-static.zip");
+						URLConnection urlConnection = urlObject.openConnection();
+						urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
+
+						try (InputStream in = urlConnection.getInputStream()) {
+							Files.copy(in, ffmpegZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+							ZipFile zipFile = new ZipFile(ffmpegZip.getPath());
+							zipFile.extractAll(ffmpegDir.getAbsolutePath());
+							System.out.println("Successfully downloaded ffmpeg!");
+						} catch (ZipException e) {
+							e.printStackTrace();
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+				if (!ffmpegExtractDir.exists()) {
+					System.out.println("Could not download ffmpeg!!");
+				}
+
+				File exe = new File(ffmpegExtractDir, "bin/ffmpeg.exe");
+				File probe = new File(ffmpegExtractDir, "bin/ffprobe.exe");
+
+				if (exe.exists()) ffmpegExe = exe;
+				if (probe.exists()) ffProbe = probe;
 			}
 
-			File exe = new File(ffmpegExtractDir, "bin/ffmpeg.exe");
-			File probe = new File(ffmpegExtractDir, "bin/ffprobe.exe");
+			{
+				File youtubeDL = new File(binDir, "youtube-dl.exe");
 
-			if (exe.exists()) ffmpegExe = exe;
-			if (probe.exists()) ffProbe = probe;
+				if (!youtubeDL.exists()) {
+					System.out.println("youtube-dl does not exist! Downloading...");
 
-			System.out.println("Successfully downloaded ffmpeg!");
-		});
-		ffmpegDownloader.start();
+					try {
+						System.out.println("ffmpeg does not exist! Downloading...");
+						URL urlObject = new URL("https://yt-dl.org/latest/youtube-dl.exe");
+						URLConnection urlConnection = urlObject.openConnection();
+						urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
 
+						try (InputStream in = urlConnection.getInputStream()) {
+							Files.copy(in, youtubeDL.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+							System.out.println("Successfully downloaded youtube-dl.exe!");
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			System.out.println("Installation Complete");
+			System.out.println("<<------------------------------------------------------------------------>>");
+		}
 
 		Thread apiUpdateThread = new Thread(() -> {
-			//try {
-			//if (api.getServerById("348507228380332032") != null) {
-			//	api.updateUsername(currentUsername = "Harry Potter").get();
-			//	Thread.sleep(1000);
-			//	api.setGame("Quidditch");
-			//	URL url = wizardryBot.getClass().getClassLoader().getResource("profiles/harry_potter.jpg");
-			//	if (url != null) {
-			//		BufferedImage img = currentAvatar = ImageIO.read(url);
-			//		Thread.sleep(1000);
-			//		api.updateAvatar(img);
-			//	}
-			//} else {
-			//	api.updateUsername(currentUsername = "Albus Dumbledore").get();
-			//	Thread.sleep(1000);
-			//	api.setGame("Elder Scrolls VI");
-			//	URL url = wizardryBot.getClass().getClassLoader().getResource("profiles/dumbledore_" + (new Random().nextInt(7) + 1) + ".jpg");
-			//	if (url != null) {
-			//		BufferedImage img = currentAvatar = ImageIO.read(url);
-			//		Thread.sleep(1000);
-			//		api.updateAvatar(img);
-			//	}
-			//}
+			URL url = wizardryBot.getClass().getClassLoader().getResource("profiles/dumbledore_" + (new Random().nextInt(7) + 1) + ".jpg");
+			if (url != null) {
+				try {
+					BufferedImage img = ImageIO.read(url);
+					api.updateAvatar(img);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 
-			Map<String, String> config = new HashMap<>();
-			config.put("cloud_name", Keys.CLOUDINARY_NAME);
-			config.put("api_key", Keys.CLOUDINARY_KEY);
-			config.put("api_secret", Keys.CLOUDINARY_SECRET);
-			cloudinary = new Cloudinary(config);
+
 			//} catch (InterruptedException | ExecutionException | IOException e) {
 			//	e.printStackTrace();
 			//}

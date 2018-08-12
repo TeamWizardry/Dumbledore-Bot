@@ -11,6 +11,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.sapher.youtubedl.YoutubeDL;
 import com.sapher.youtubedl.YoutubeDLRequest;
 import com.sapher.youtubedl.YoutubeDLResponse;
+import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
@@ -71,14 +72,12 @@ public class ModulePlay extends Module implements ICommandModule {
 						HttpResponse<JsonNode> response = Unirest.get("https://www.googleapis.com/youtube/v3/search?q=" + URLEncoder.encode(songName, "UTF-8") +
 								"&maxResults=5" +
 								"&part=snippet" +
-								"&key=AIzaSyALDKih_8KFgz25Gnv0cP-vbT3AaqugRiA")
+								"&key=" + Keys.YOUTUBE)
 								.asJson();
 
 						JsonElement element = new JsonParser().parse(response.getBody().toString());
 						if (!element.isJsonObject()) return;
 						JsonObject object = element.getAsJsonObject();
-
-						System.out.println(object.toString());
 
 						if (object.has("items") && object.get("items").isJsonArray()) {
 							for (JsonElement itemElement : object.getAsJsonArray("items")) {
@@ -120,10 +119,19 @@ public class ModulePlay extends Module implements ICommandModule {
 						String url = "https://www.youtube.com/watch?v=" + videoId;
 						File downloadDir = new File("downloads/");
 						if (!downloadDir.exists()) downloadDir.mkdirs();
+
+						File finishedMp3 = new File(downloadDir, title + ".mp3");
+						if (finishedMp3.exists()) {
+							message.getChannel().sendMessage(finishedMp3);
+							return;
+						}
+
 						File audio = new File(downloadDir, title + ".webm");
 
 						if (!audio.exists()) {
 
+							File bin = new File("bin/youtube-dl.exe");
+							YoutubeDL.setExecutablePath(bin.getAbsolutePath());
 							YoutubeDLRequest request = new YoutubeDLRequest(url, downloadDir.getPath());
 							request.setOption("format", "bestaudio");
 
@@ -171,7 +179,7 @@ public class ModulePlay extends Module implements ICommandModule {
 							return;
 						}
 
-						message.getChannel().sendMessage(audio);
+						message.getChannel().sendMessage(mp3);
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}

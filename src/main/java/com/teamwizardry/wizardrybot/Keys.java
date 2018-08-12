@@ -16,9 +16,8 @@ public final class Keys {
 	public static String BING_SPELL_CHECK_API;
 	public static String MERRIAM_DICTIONARY_KEY;
 	public static String PASSWORD;
-	public static String CLOUDINARY_NAME;
-	public static String CLOUDINARY_KEY;
-	public static String CLOUDINARY_SECRET;
+	public static String IMGUR;
+	public static String YOUTUBE;
 
 	public static boolean authorize(String KEY) {
 		try {
@@ -42,11 +41,12 @@ public final class Keys {
 				Keys.BING_SPELL_CHECK_API = object.getAsJsonPrimitive("bing_spell_check").getAsString();
 				Keys.MERRIAM_DICTIONARY_KEY = object.getAsJsonPrimitive("merriam_dictionary").getAsString();
 				Keys.PASSWORD = object.getAsJsonPrimitive("password").getAsString();
-				Keys.CLOUDINARY_NAME = object.getAsJsonPrimitive("cloudinary_name").getAsString();
-				Keys.CLOUDINARY_KEY = object.getAsJsonPrimitive("cloudinary_key").getAsString();
-				Keys.CLOUDINARY_SECRET = object.getAsJsonPrimitive("cloudinary_secret").getAsString();
+				//Keys.CLOUDINARY_NAME = object.getAsJsonPrimitive("cloudinary_name").getAsString();
+				//Keys.CLOUDINARY_KEY = object.getAsJsonPrimitive("cloudinary_key").getAsString();
+				//Keys.CLOUDINARY_SECRET = object.getAsJsonPrimitive("cloudinary_secret").getAsString();
 				Keys.WIZARDRY_DIALOGFLOW_API = object.getAsJsonPrimitive("wizardry_dialogflow_api").getAsString();
-
+				Keys.IMGUR = object.getAsJsonPrimitive("imgur").getAsString();
+				Keys.YOUTUBE = object.getAsJsonPrimitive("youtube").getAsString();
 				return true;
 			}
 		} catch (UnirestException ignored) {

@@ -1,8 +1,8 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.api.imgur.ImgurUploader;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.javacord.api.DiscordApi;
@@ -14,8 +14,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class ModuleMath extends Module implements ICommandModule {
@@ -172,14 +170,14 @@ public class ModuleMath extends Module implements ICommandModule {
 					if (!file.exists()) file.createNewFile();
 					ImageIO.write(image, "png", file);
 
-					Map finalMap = WizardryBot.cloudinary.uploader().upload(file, new HashMap());
+					String url = ImgurUploader.upload(file);
 
 					message.getChannel().sendMessage("Done! That took me " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - origin) + " seconds.");
 					EmbedBuilder builder = new EmbedBuilder();
 					builder.setTitle("Grapher")
 							.setDescription(finalTEquation)
-							.setImage((String) finalMap.get("url"))
-							.setUrl((String) finalMap.get("url"));
+							.setImage(url)
+							.setUrl(url);
 					message.getChannel().sendMessage(builder);
 					Statistics.INSTANCE.addToStat("graphs_created");
 				} catch (IOException e) {

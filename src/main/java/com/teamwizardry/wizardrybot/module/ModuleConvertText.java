@@ -85,6 +85,11 @@ public class ModuleConvertText extends Module {
 					} else {
 						message.getChannel().sendMessage("```" + txt + "```");
 					}
+
+					if (txt.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
+						message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLib***");
+						message.getChannel().sendMessage("***LibrarianLib Download Link: https://minecraft.curseforge.com/projects/librarianlib***");
+					}
 					Statistics.INSTANCE.addToStat("text_files_summarized");
 
 				} catch (IOException e) {
@@ -112,6 +117,11 @@ public class ModuleConvertText extends Module {
 					message.getChannel().sendMessage("```" + string + "```");
 			} else {
 				message.getChannel().sendMessage("```" + text + "```");
+			}
+
+			if (text.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
+				message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLib***");
+				message.getChannel().sendMessage("***LibrarianLib Download Link: https://minecraft.curseforge.com/projects/librarianlib***");
 			}
 			Statistics.INSTANCE.addToStat("text_files_summarized");
 		}

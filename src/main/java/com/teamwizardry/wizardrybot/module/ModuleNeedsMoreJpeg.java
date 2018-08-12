@@ -1,9 +1,6 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.api.imgur.ImgurUploader;
 import org.javacord.api.DiscordApi;
@@ -109,17 +106,11 @@ public class ModuleNeedsMoreJpeg extends Module implements ICommandModule {
 				ImageIO.write(image, "jpeg", compressedImageFile);
 
 				System.out.println("Needs more jpeg: uploading...");
-				JsonElement element = new JsonParser().parse(ImgurUploader.upload(compressedImageFile));
-				if (element.isJsonObject()) {
-					JsonObject imgur = element.getAsJsonObject();
-					if (imgur.has("data") && imgur.get("data").isJsonObject()) {
-						JsonObject data = imgur.getAsJsonObject("data");
-						if (data.has("link") && data.get("link").isJsonPrimitive()) {
-							message.getChannel().sendMessage(data.getAsJsonPrimitive("link").getAsString().replace("\\", ""));
-							Statistics.INSTANCE.addToStat("jpeged_images");
-						}
-					}
-				}
+				String link = ImgurUploader.upload(compressedImageFile);
+
+				message.getChannel().sendMessage(link);
+				Statistics.INSTANCE.addToStat("jpeged_images");
+
 				compressedImageFile.delete();
 			} catch (Exception e) {
 				e.printStackTrace();

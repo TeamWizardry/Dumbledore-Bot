@@ -1,5 +1,12 @@
 package com.teamwizardry.wizardrybot.api.imgur;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.teamwizardry.wizardrybot.Keys;
+import com.teamwizardry.wizardrybot.api.Statistics;
+import org.jetbrains.annotations.Nullable;
+
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -20,7 +27,7 @@ public class ImgurUploader {
 	public static final int MAX_UPLOAD_ATTEMPTS = 3;
 
 	//CHANGE TO @CLIENT_ID@ and replace with buildscript.
-	private final static String CLIENT_ID = "efce6070269a7f1";
+	private final static String CLIENT_ID = Keys.IMGUR;
 
 	/**
 	 * Takes a url and uploads it to Imgur.
@@ -28,12 +35,27 @@ public class ImgurUploader {
 	 * before the url is passed to this method.
 	 *
 	 * @param file The image to be uploaded to Imgur.
-	 * @return The JSON response from Imgur.
+	 * @return Link
 	 */
+	@Nullable
 	public static String upload(File file) {
 		HttpURLConnection conn = getHttpConnection(UPLOAD_API_URL);
 		writeToConnection(conn, "image=" + toBase64(file));
-		return getResponse(conn);
+		String response = getResponse(conn);
+
+		JsonElement element = new JsonParser().parse(upload(response));
+		if (element.isJsonObject()) {
+			JsonObject imgur = element.getAsJsonObject();
+			if (imgur.has("data") && imgur.get("data").isJsonObject()) {
+				JsonObject data = imgur.getAsJsonObject("data");
+				if (data.has("link") && data.get("link").isJsonPrimitive()) {
+					Statistics.INSTANCE.addToStat("images_uploaded");
+					return data.getAsJsonPrimitive("link").getAsString().replace("\\", "");
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**

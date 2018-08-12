@@ -4,8 +4,8 @@ import ai.api.model.Result;
 import com.google.cloud.vision.v1.*;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.UnknownFieldSet;
-import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.api.imgur.ImgurUploader;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
@@ -316,8 +316,7 @@ public class ModuleLookAt extends Module implements ICommandModule {
 
 						message.getChannel().sendMessage("Uploading...");
 
-						Map finalMap = WizardryBot.cloudinary.uploader().upload(file, new HashMap());
-						String stringURL = finalMap.containsKey("url") ? "" + finalMap.get("url") : null;
+						String stringURL = ImgurUploader.upload(file);
 
 						EmbedBuilder builder = new EmbedBuilder()
 								.setTitle("Analysis");
