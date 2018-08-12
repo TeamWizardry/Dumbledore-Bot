@@ -7,6 +7,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.Channel;
@@ -19,8 +21,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,6 +47,11 @@ public class WizardryBot {
 	public static URL domains;
 
 	public static boolean DEV_MODE = false;
+
+	@Nullable
+	public static File ffmpegExe = null;
+	@Nullable
+	public static File ffProbe = null;
 
 	public static void main(String[] args) {
 		wizardryBot = new WizardryBot();
@@ -79,6 +90,49 @@ public class WizardryBot {
 		});
 
 		domainThread.start();
+
+		Thread ffmpegDownloader = new Thread(() -> {
+			File ffmpegDir = new File("ffmpeg/");
+			if (!ffmpegDir.exists()) ffmpegDir.mkdirs();
+
+			File ffmpegZip = new File(ffmpegDir, "ffmpegZip.zip");
+			File ffmpegExtractDir = new File(ffmpegDir, "ffmpeg-4.0.2-win64-static");
+
+			if (!ffmpegZip.exists()) {
+				try {
+					System.out.println("ffmpeg does not exist! Downloading...");
+					URL urlObject = new URL("https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-4.0.2-win64-static.zip");
+					URLConnection urlConnection = urlObject.openConnection();
+					urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
+
+					try (InputStream in = urlConnection.getInputStream()) {
+						Files.copy(in, ffmpegZip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+						ZipFile zipFile = new ZipFile(ffmpegZip.getPath());
+						zipFile.extractAll(ffmpegDir.getPath());
+					} catch (ZipException e) {
+						e.printStackTrace();
+					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			if (!ffmpegExtractDir.exists()) {
+				System.out.println("Could not download ffmpeg!! REEEEEEEEE");
+			}
+
+			File exe = new File(ffmpegExtractDir, "bin/ffmpeg.exe");
+			File probe = new File(ffmpegExtractDir, "bin/ffprobe.exe");
+
+			if (exe.exists()) ffmpegExe = exe;
+			if (probe.exists()) ffProbe = probe;
+
+			System.out.println("Successfully downloaded ffmpeg!");
+		});
+		ffmpegDownloader.start();
+
 
 		Thread apiUpdateThread = new Thread(() -> {
 			//try {
@@ -197,7 +251,7 @@ public class WizardryBot {
 		for (Module module : modules) {
 			if (shouldRespond || module.overrideResponseCheck()) {
 				module.onMessage(api, message, result, command);
-				
+
 				if (module instanceof ICommandModule) {
 
 					ICommandModule moduleCmd = (ICommandModule) module;
