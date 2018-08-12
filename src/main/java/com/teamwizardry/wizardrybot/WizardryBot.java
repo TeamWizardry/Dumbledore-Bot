@@ -75,6 +75,7 @@ public class WizardryBot {
 		{
 			System.out.println("<<------------------------------------------------------------------------>>");
 			File binDir = new File("bin/");
+			if (!binDir.exists()) binDir.mkdirs();
 
 			{
 				try {
