@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 public class ModulePlay extends Module implements ICommandModule {
 
-	private static final CharMatcher ALNUM = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('A', 'Z')).or(CharMatcher.inRange('0', '9')).precomputed();
+	private static final CharMatcher ALNUM = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('A', 'Z')).or(CharMatcher.inRange('0', '9')).or(CharMatcher.is(' ')).precomputed();
 	private static final Pattern DIACRITICS_AND_FRIENDS = Pattern.compile("[\\p{InCombiningDiacriticalMarks}\\p{IsLm}\\p{IsSk}]+");
 
 	@Override
@@ -84,9 +84,12 @@ public class ModulePlay extends Module implements ICommandModule {
 
 		if (dir.exists() && dir.isDirectory()) {
 			File[] files = dir.listFiles(); //get the files in String format.
-			for (File file : files) {
-				if (file.getName().contains(substring))
-					return file;
+			if (files != null) {
+				for (File file : files) {
+					System.out.println(file.getName() + " =? " + substring);
+					if (file.getName().contains(substring))
+						return file;
+				}
 			}
 		}
 
@@ -149,7 +152,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					message.getChannel().sendMessage("No video found.");
 					return;
 				}
-				title = ALNUM.retainFrom(stripDiacritics(title));
+				String strippedTitle = ALNUM.retainFrom(stripDiacritics(title));
 
 				if (WizardryBot.ffmpegExe == null || WizardryBot.ffProbe == null) {
 					message.getChannel().sendMessage("Ffmpeg could not be found. Yell at my maker.");
@@ -161,13 +164,13 @@ public class ModulePlay extends Module implements ICommandModule {
 					File downloadDir = new File("downloads/");
 					if (!downloadDir.exists()) downloadDir.mkdirs();
 
-					File finishedMp3 = new File(downloadDir, title + ".mp3");
+					File finishedMp3 = new File(downloadDir, strippedTitle + ".mp3");
 					if (finishedMp3.exists()) {
 						message.getChannel().sendMessage(finishedMp3);
 						return;
 					}
 
-					File audio = new File(downloadDir, title + ".webm");
+					File audio = new File(downloadDir, strippedTitle + ".webm");
 
 					if (!audio.exists()) {
 						System.out.println("Downloading " + title);
@@ -184,7 +187,7 @@ public class ModulePlay extends Module implements ICommandModule {
 						System.out.println("Finished downloading " + title);
 					}
 
-					File findAudio = findFileContainingName(downloadDir, title);
+					File findAudio = findFileContainingName(downloadDir, videoId);
 
 					if (findAudio == null) {
 						message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
@@ -207,7 +210,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					FFmpegBuilder builder = new FFmpegBuilder()
 							.setInput(ffmpegResult)
 							.overrideOutputFiles(true)
-							.addOutput("downloads/" + title + ".mp3")
+							.addOutput("downloads/" + strippedTitle + ".mp3")
 							.setFormat("mp3")
 							.done();
 
@@ -216,7 +219,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					executor.createJob(builder).run();
 
 					audio.delete();
-					File mp3 = new File(downloadDir, title + ".mp3");
+					File mp3 = new File(downloadDir, strippedTitle + ".mp3");
 
 					if (!mp3.exists()) {
 						message.getChannel().sendMessage("Couldn't compress video");
@@ -224,6 +227,7 @@ public class ModulePlay extends Module implements ICommandModule {
 					}
 
 					message.getChannel().sendMessage(mp3);
+
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
