@@ -86,13 +86,11 @@ public class ModuleSubjectiveQuestion extends Module implements ICommandModule {
 
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		boolean yesNoQuestion = false;
 		String any = result.getStringParameter("any");
 
-		String opinion = result.getStringParameter("opinion");
-		if (opinion.equals("yes/no")) yesNoQuestion = true;
+		String opinion = result.getStringParameter("tell-me");
 
-		if (yesNoQuestion) {
+		if (opinion.equals("yes/no")) {
 			Random rand = new Random(message.getContent().hashCode());
 			int random = rand.nextInt(yesNoResponses.size() - 1);
 			message.getChannel().sendMessage(yesNoResponses.get(random));
