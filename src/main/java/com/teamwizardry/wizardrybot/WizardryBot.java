@@ -95,7 +95,7 @@ public class WizardryBot {
 
 					}
 
-					if (!domainsFile.exists()) {
+					if (domainsFile.exists()) {
 						Domains.INSTANCE.init();
 					}
 				} catch (IOException e) {
