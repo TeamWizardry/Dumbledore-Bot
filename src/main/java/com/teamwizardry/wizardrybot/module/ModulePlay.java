@@ -144,6 +144,7 @@ public class ModulePlay extends Module implements ICommandModule {
 						String stdOut = response.getOut();
 
 						System.out.println(stdOut);
+						System.out.println("Finished downloading " + title);
 					}
 
 					File findAudio = findFileContainingName(downloadDir, title);

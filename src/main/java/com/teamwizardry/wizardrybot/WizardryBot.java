@@ -148,10 +148,9 @@ public class WizardryBot {
 				File youtubeDL = new File(binDir, "youtube-dl.exe");
 
 				if (!youtubeDL.exists()) {
-					System.out.println("youtube-dl does not exist! Downloading...");
 
 					try {
-						System.out.println("ffmpeg does not exist! Downloading...");
+						System.out.println("Youtube-dl does not exist! Downloading...");
 						URL urlObject = new URL("https://yt-dl.org/latest/youtube-dl.exe");
 						URLConnection urlConnection = urlObject.openConnection();
 						urlConnection.setRequestProperty("User-Agent", "Google Chrome Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36.");
