@@ -355,36 +355,45 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 								Font fontObj = new Font(font == null ? "Impact" : font, (bold ? Font.BOLD : 0) + (italic ? Font.ITALIC : 0), fontSize);
 
-								int width = Integer.MAX_VALUE;
-								while (fontSize >= 10 && width >= imgDims.x) {
-									fontObj = new Font(font == null ? "Impact" : font, (bold ? Font.BOLD : 0) + (italic ? Font.ITALIC : 0), --fontSize);
-									width = graphics.getFontMetrics(fontObj).stringWidth(text);
+								String[] split;
+
+								if (text.contains("/n"))
+									split = text.split("/n");
+								else split = new String[]{text};
+								for (int i = 0; i < split.length; i++) {
+									String line = split[i].trim();
+
+									int width = Integer.MAX_VALUE;
+									while (fontSize >= 10 && width >= imgDims.x) {
+										fontObj = new Font(font == null ? "Impact" : font, (bold ? Font.BOLD : 0) + (italic ? Font.ITALIC : 0), --fontSize);
+										width = graphics.getFontMetrics(fontObj).stringWidth(line);
+									}
+
+									Rectangle2D textBounds = graphics.getFontMetrics(fontObj).getStringBounds(line, graphics);
+
+									loc = getVecFromName(paramsMap.get("loc"), imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+
+									if (loc == null) {
+										graphics.dispose();
+										message.getChannel().sendMessage("Invalid location. Try again.");
+										throw new Exception();
+									}
+									graphics.translate(loc.x, loc.y + textBounds.getHeight() * i);
+
+									GlyphVector vector = fontObj.createGlyphVector(graphics.getFontRenderContext(), line);
+									Shape textShape = vector.getOutline();
+
+									if (outlineWidth > 0 && outlineColor != null) {
+										graphics.setColor(outlineColor);
+										graphics.draw(textShape);
+									}
+
+									graphics.setColor(color);
+									graphics.fill(textShape);
+
+									graphics.translate(-loc.x, -loc.y - textBounds.getHeight() * i);
+
 								}
-
-								Rectangle2D textBounds = graphics.getFontMetrics(fontObj).getStringBounds(text, graphics);
-
-								loc = getVecFromName(paramsMap.get("loc"), imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
-
-								if (loc == null) {
-									graphics.dispose();
-									message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-									throw new Exception();
-								}
-								graphics.translate(loc.x, loc.y);
-
-								GlyphVector vector = fontObj.createGlyphVector(graphics.getFontRenderContext(), text);
-								Shape textShape = vector.getOutline();
-
-								if (outlineColor != null) {
-									graphics.setColor(outlineColor);
-									graphics.draw(textShape);
-								}
-
-								graphics.setColor(color);
-								graphics.fill(textShape);
-
-								graphics.translate(-loc.x, -loc.y);
-
 							}
 						}
 
@@ -521,6 +530,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 				return new Vec2d(x, y);
 			}
+			case "topleft":
 			case "upperleft": {
 				double x = 0;
 				double y = textDims.y;
@@ -528,12 +538,15 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				return new Vec2d(x, y);
 			}
 
+			case "topright":
 			case "upperright": {
 				double x = imgDims.x - textDims.x;
 				double y = textDims.y;
 
 				return new Vec2d(x, y);
 			}
+
+			case "lowerleft":
 			case "bottomleft": {
 				double x = 0;
 				double y = imgDims.y - textDims.y;
@@ -541,6 +554,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				return new Vec2d(x, y);
 			}
 
+			case "lowerright":
 			case "bottomright": {
 				double x = imgDims.x - textDims.x;
 				double y = imgDims.y - textDims.y;
