@@ -81,6 +81,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 		String[] args = command.getCommandArguments().split(" ");
 
+		Statistics.INSTANCE.addToStat("attempted_meme_generations");
 		if (args.length <= 0) {
 			incorrectCommand(message);
 			return;
@@ -405,6 +406,8 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 						ImageIO.write(img, "jpeg", file);
 
 						message.getChannel().sendMessage(ImgurUploader.upload(file));
+
+						Statistics.INSTANCE.addToStat("successful_meme_generations");
 
 						file.delete();
 
