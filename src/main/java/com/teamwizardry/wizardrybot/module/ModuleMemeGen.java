@@ -469,6 +469,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								String url = dataObject.getAsJsonPrimitive("url").getAsString();
 
 								message.getChannel().sendMessage(ImgurUploader.upload(url));
+								Statistics.INSTANCE.addToStat("successful_meme_generations");
 
 							}
 						}
