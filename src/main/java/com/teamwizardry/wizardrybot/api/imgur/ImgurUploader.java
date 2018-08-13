@@ -86,6 +86,19 @@ public class ImgurUploader {
 	}
 
 	@Nullable
+	public static JsonObject uploadWithJson(File file) {
+		HttpURLConnection conn = getHttpConnection(UPLOAD_API_URL);
+		writeToConnection(conn, "image=" + toBase64(file));
+		String response = getResponse(conn);
+
+		JsonElement element = new JsonParser().parse(response);
+		if (element.isJsonObject()) {
+			return element.getAsJsonObject();
+		}
+		return null;
+	}
+
+	@Nullable
 	public static JsonObject uploadWithJson(String URL) {
 		HttpURLConnection conn = getHttpConnection(UPLOAD_API_URL);
 		writeToConnection(conn, "image=" + URL);
@@ -188,6 +201,7 @@ public class ImgurUploader {
 		BufferedReader reader;
 		try {
 			if (conn.getResponseCode() != StatusCode.SUCCESS.getHttpCode()) {
+				System.out.println(conn.getResponseMessage());
 				throw new WebException(conn.getResponseCode());
 			}
 			reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));

@@ -55,37 +55,6 @@ public class ModuleLookAt extends Module implements ICommandModule {
 		return new String[0];
 	}
 
-	public static BufferedImage resizeProportionally(BufferedImage bufferedImage, int scaledWidth, int scaledHeight) {
-		BufferedImage outputImage = new BufferedImage(scaledWidth, scaledHeight, bufferedImage.getType());
-
-		Graphics2D g2d = outputImage.createGraphics();
-		g2d.setComposite(AlphaComposite.Src);
-		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-		Dimension scaled = getScaledDimension(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()), new Dimension(scaledWidth, scaledHeight));
-		g2d.drawImage(bufferedImage, (int) (scaledWidth / 2.0 - scaled.width / 2.0), (int) (scaledHeight / 2.0 - scaled.height / 2.0), scaled.width, scaled.height, null);
-		g2d.dispose();
-
-		return outputImage;
-	}
-
-	public static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
-
-		double requiredWidth, requiredHeight;
-		double targetRatio = boundary.getWidth() / boundary.getHeight();
-		double sourceRatio = imgSize.getWidth() / imgSize.getHeight();
-		if (sourceRatio >= targetRatio) { // source is wider than target in proportion
-			requiredWidth = boundary.getWidth();
-			requiredHeight = requiredWidth / sourceRatio;
-		} else { // source is higher than target in proportion
-			requiredHeight = boundary.getHeight();
-			requiredWidth = requiredHeight * sourceRatio;
-		}
-		return new Dimension((int) requiredWidth, (int) requiredHeight);
-	}
-
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 		ThreadManager.INSTANCE.addThread(new Thread(() -> {
@@ -118,7 +87,7 @@ public class ModuleLookAt extends Module implements ICommandModule {
 						file.delete();
 					}
 
-					img = resizeProportionally(img, 1920, 1080);
+					img = Utils.resizeProportionally(img, 1920, 1080);
 					ImageIO.write(img, "png", file);
 
 					ByteString imgBytes = ByteString.readFrom(new FileInputStream(file));

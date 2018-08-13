@@ -21,11 +21,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class Utils {
@@ -295,5 +297,51 @@ public class Utils {
 			}
 		}
 		return null;
+	}
+
+	public static BufferedImage resize(BufferedImage bufferedImage, int scaledWidth, int scaledHeight) {
+		BufferedImage outputImage = new BufferedImage(scaledWidth, scaledHeight, bufferedImage.getType());
+
+		Graphics2D g2d = outputImage.createGraphics();
+		g2d.setComposite(AlphaComposite.Src);
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		g2d.drawImage(bufferedImage, 0, 0, scaledWidth, scaledHeight, null);
+		g2d.dispose();
+
+		return outputImage;
+	}
+
+	public static BufferedImage resizeProportionally(BufferedImage bufferedImage, int scaledWidth, int scaledHeight) {
+		BufferedImage outputImage = new BufferedImage(scaledWidth, scaledHeight, bufferedImage.getType());
+
+		Graphics2D g2d = outputImage.createGraphics();
+		g2d.setComposite(AlphaComposite.Src);
+		g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+		Dimension scaled = getScaledDimension(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()), new Dimension(scaledWidth, scaledHeight));
+		g2d.drawImage(bufferedImage, (int) (scaledWidth / 2.0 - scaled.width / 2.0), (int) (scaledHeight / 2.0 - scaled.height / 2.0), scaled.width, scaled.height, null);
+		g2d.dispose();
+
+		return outputImage;
+	}
+
+	public static Dimension getScaledDimension(Dimension imgSize, Dimension boundary) {
+
+		double requiredWidth, requiredHeight;
+		double targetRatio = boundary.getWidth() / boundary.getHeight();
+		double sourceRatio = imgSize.getWidth() / imgSize.getHeight();
+		if (sourceRatio >= targetRatio) { // source is wider than target in proportion
+			requiredWidth = boundary.getWidth();
+			requiredHeight = requiredWidth / sourceRatio;
+		} else { // source is higher than target in proportion
+			requiredHeight = boundary.getHeight();
+			requiredWidth = requiredHeight * sourceRatio;
+		}
+		return new Dimension((int) requiredWidth, (int) requiredHeight);
 	}
 }
