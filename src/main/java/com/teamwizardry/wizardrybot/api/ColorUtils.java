@@ -174,7 +174,7 @@ public class ColorUtils {
 	 * @param b
 	 * @return
 	 */
-	public String getColorNameFromRgb(int r, int g, int b) {
+	public static String getColorNameFromRgb(int r, int g, int b) {
 		ArrayList<ColorName> colorList = initColorList();
 		ColorName closestMatch = null;
 		int minMSE = Integer.MAX_VALUE;
@@ -194,7 +194,7 @@ public class ColorUtils {
 		}
 	}
 
-	public Color getColorFromName(String color) {
+	public static Color getColorFromName(String color) {
 		for (ColorName c : colorList) {
 			if (c.name.equalsIgnoreCase(color)) {
 				return new Color(c.getR(), c.getG(), c.getG());
@@ -210,18 +210,18 @@ public class ColorUtils {
 	 * @param hexColor
 	 * @return
 	 */
-	public String getColorNameFromHex(int hexColor) {
+	public static String getColorNameFromHex(int hexColor) {
 		int r = (hexColor & 0xFF0000) >> 16;
 		int g = (hexColor & 0xFF00) >> 8;
 		int b = (hexColor & 0xFF);
 		return getColorNameFromRgb(r, g, b);
 	}
 
-	public int colorToHex(Color c) {
+	public static int colorToHex(Color c) {
 		return Integer.decode("0x" + Integer.toHexString(c.getRGB()).substring(2));
 	}
 
-	public String getColorNameFromColor(Color color) {
+	public static String getColorNameFromColor(Color color) {
 		return getColorNameFromRgb(color.getRed(), color.getGreen(), color.getBlue());
 	}
 

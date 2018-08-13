@@ -43,7 +43,7 @@ public class ImgurUploader {
 		writeToConnection(conn, "image=" + toBase64(file));
 		String response = getResponse(conn);
 
-		JsonElement element = new JsonParser().parse(upload(response));
+		JsonElement element = new JsonParser().parse(response);
 		if (element.isJsonObject()) {
 			JsonObject imgur = element.getAsJsonObject();
 			if (imgur.has("data") && imgur.get("data").isJsonObject()) {
@@ -54,7 +54,6 @@ public class ImgurUploader {
 				}
 			}
 		}
-
 		return null;
 	}
 
@@ -66,12 +65,38 @@ public class ImgurUploader {
 	 * @param URL The image to be uploaded to Imgur.
 	 * @return The JSON response from Imgur.
 	 */
+	@Nullable
 	public static String upload(String URL) {
 		HttpURLConnection conn = getHttpConnection(UPLOAD_API_URL);
 		writeToConnection(conn, "image=" + URL);
-		return getResponse(conn);
+		String response = getResponse(conn);
+
+		JsonElement element = new JsonParser().parse(response);
+		if (element.isJsonObject()) {
+			JsonObject imgur = element.getAsJsonObject();
+			if (imgur.has("data") && imgur.get("data").isJsonObject()) {
+				JsonObject data = imgur.getAsJsonObject("data");
+				if (data.has("link") && data.get("link").isJsonPrimitive()) {
+					Statistics.INSTANCE.addToStat("images_uploaded");
+					return data.getAsJsonPrimitive("link").getAsString().replace("\\", "");
+				}
+			}
+		}
+		return null;
 	}
 
+	@Nullable
+	public static JsonObject uploadWithJson(String URL) {
+		HttpURLConnection conn = getHttpConnection(UPLOAD_API_URL);
+		writeToConnection(conn, "image=" + URL);
+		String response = getResponse(conn);
+
+		JsonElement element = new JsonParser().parse(response);
+		if (element.isJsonObject()) {
+			return element.getAsJsonObject();
+		}
+		return null;
+	}
 	/**
 	 * Creates an album on Imgur.
 	 * Does not check if imageIds are valid images on Imgur.

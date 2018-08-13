@@ -89,7 +89,7 @@ public class Utils {
 			return null;
 		}
 
-		File file = new File("tempFile.png");
+		File file = new File("downloads/temp-" + UUID.randomUUID() + ".png");
 		if (file.exists()) {
 			file.delete();
 		}

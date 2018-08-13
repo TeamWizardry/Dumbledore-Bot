@@ -209,7 +209,10 @@ public class WizardryBot {
 		}
 
 		api.addMessageCreateListener(messageCreateEvent -> {
-			processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
+
+			if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
+
+				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
 
 		File file = new File("amRestarting.json");
