@@ -692,7 +692,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 						if (!file.exists()) file.createNewFile();
 						ImageIO.write(img, "jpeg", file);
 
-						message.getChannel().sendMessage("  ..... ");
 						message.getChannel().sendMessage(ImgurUploader.upload(file));
 
 						Statistics.INSTANCE.addToStat("successful_meme_generations");
