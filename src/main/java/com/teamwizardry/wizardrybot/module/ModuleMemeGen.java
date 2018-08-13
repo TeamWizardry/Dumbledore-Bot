@@ -65,13 +65,41 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				"DO NOT WORRY ABOUT FORMATTING. You can add as many spaces and junk as you want in the boxes. I handle them properly so you can't easily fuck shit up." + "\n";
 	}
 
+	public static BufferedImage toBufferedImage(Image img) {
+		if (img instanceof BufferedImage) {
+			return (BufferedImage) img;
+		}
+
+		// Create a buffered image with transparency
+		BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+		// Draw the image on to the buffered image
+		Graphics2D bGr = bimage.createGraphics();
+		bGr.drawImage(img, 0, 0, null);
+		bGr.dispose();
+
+		// Return the buffered image
+		return bimage;
+	}
+
 	@Override
 	public String getExample() {
 		return "hey albus, meme 61579 [one does not simply] [make a meme]" + "\n" +
 				"hey albus, meme 143318362 {loc=center right; text=slaps roof of car; color=white}" + "\n" +
 				"hey albus, meme 143318362 {loc=bottomleft; text=slaps roof of car; color=royal blue, size = 234}" + "\n" +
 				"hey albus, meme 143318362 {loc=upper right; text=slaps roof of car; color=OldLace} {loc=center; text=this bad boy can hold so many features; outline color=red}" + "\n" +
-				"hey albus, meme 143318362 {loc=center; text=slaps roof of car; color=magenta, outline width = 42}" + "\n";
+				"hey albus, meme 143318362 {loc=center; text=slaps roof of car; color=magenta, outline width = 42}" + "\n\n" +
+				"hey albus, meme 97630774\n" +
+				" [loc = center left; text = test1; x += 150; y -= 100] \n" +
+				" [loc = center right; text = test2; x -= 150; y -= 100] \n" +
+				" [link = https://i.imgur.com/IQvYr96.jpg; height = 300; loc = bottom left; x += 100] \n" +
+				" [link = https://i.imgur.com/jRuwgxf.jpg; height = 300; loc = bottom right; x -= 50]";
+	}
+
+	private void incorrectCommand(Message message) {
+		message.getChannel().sendMessage("Incorrect command usage");
+		message.getChannel().sendMessage("Usage: `" + getUsage() + "`");
+		message.getChannel().sendMessage("Example: `" + getExample() + "`");
 	}
 
 	@Override
@@ -235,13 +263,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 									if (dataObject.has("url") && dataObject.get("url").isJsonPrimitive()) {
 
-										File temp = new File("downloads/temp_" + UUID.randomUUID() + ".jpeg");
-										BufferedImage tmpimg = Utils.downloadURLAsImage(message, dataObject.getAsJsonPrimitive("url").getAsString());
-										if (!temp.exists()) temp.createNewFile();
-										ImageIO.write(tmpimg, "jpeg", temp);
-
-										JsonObject obj = ImgurUploader.uploadWithJson(temp);
-										temp.delete();
+										JsonObject obj = ImgurUploader.uploadWithJson(dataObject.getAsJsonPrimitive("url").getAsString());
 
 										if (obj == null) {
 											message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
@@ -300,6 +322,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftX = -Integer.parseInt(value);
+										break;
 									}
 
 									case "x_+":
@@ -310,6 +333,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftX = Integer.parseInt(value);
+										break;
 									}
 
 									case "y-":
@@ -320,6 +344,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftY = -Integer.parseInt(value);
+										break;
 									}
 
 									case "y_+":
@@ -339,6 +364,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										x = Integer.parseInt(value);
+										break;
 									}
 
 									case "y": {
@@ -348,6 +374,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										y = Integer.parseInt(value);
+										break;
 									}
 
 									case "width":
@@ -359,7 +386,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										pasteImgWidth = Integer.parseInt(value);
-
 										break;
 									}
 
@@ -372,7 +398,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										pasteImgHeight = Integer.parseInt(value);
-
 										break;
 									}
 
@@ -392,32 +417,28 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							BufferedImage pasteImg = Utils.downloadURLAsImage(message, pasteURL);
 
 							if (pasteImg == null) continue;
+							pasteImg = toBufferedImage(pasteImg.getScaledInstance(pasteImgWidth, pasteImgHeight, Image.SCALE_SMOOTH));
 
 							Vec2d size = new Vec2d(pasteImg.getWidth(), pasteImg.getHeight());
-
-							if (pasteImgWidth != -1 && pasteImgHeight == -1) {
-								pasteImg = Utils.resizeProportionally(pasteImg, pasteImgWidth, (int) size.y);
-							} else if (pasteImgWidth == -1 && pasteImgHeight != -1) {
-								pasteImg = Utils.resizeProportionally(pasteImg, (int) size.x, pasteImgHeight);
-							} else if (pasteImgWidth != -1 && pasteImgHeight != -1) {
-								pasteImg = Utils.resize(pasteImg, (int) size.x, pasteImgHeight);
-							}
 
 							if (params.containsKey("loc")) {
 								loc = getVecFromName(params.get("loc"), imgDims, size);
 							} else {
 								if (j == 0) {
-									loc = getVecFromName("top", imgDims, size);
-
+									if (boxes.length == 1) {
+										loc = getVecFromName("center", imgDims, size);
+									} else {
+										loc = getVecFromName("center left", imgDims, size);
+									}
 								} else if (j == 1) {
 
 									if (boxes.length == 2) {
-										loc = getVecFromName("bottom", imgDims, size);
+										loc = getVecFromName("center right", imgDims, size);
 									} else {
 										loc = getVecFromName("center", imgDims, size);
 									}
 								} else if (j == 2) {
-									loc = getVecFromName("bottom", imgDims, size);
+									loc = getVecFromName("center right", imgDims, size);
 								} else if (x == -1 && y == -1) {
 									continue;
 								}
@@ -430,7 +451,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 							graphics.translate(loc.x, loc.y);
 
-							graphics.drawImage(pasteImg.getScaledInstance(pasteImgWidth, pasteImgHeight, Image.SCALE_SMOOTH), (int) loc.x, (int) loc.y, null);
+							graphics.drawImage(pasteImg, 0, 0, null);
 
 							graphics.translate(-loc.x, -loc.y);
 						}
@@ -460,7 +481,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 											break;
 										}
 										color = c;
-
 										break;
 									}
 
@@ -472,6 +492,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftX = -Integer.parseInt(value);
+										break;
 									}
 
 									case "x_+":
@@ -482,6 +503,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftX = Integer.parseInt(value);
+										break;
 									}
 
 									case "y-":
@@ -492,6 +514,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftY = -Integer.parseInt(value);
+										break;
 									}
 
 									case "y_+":
@@ -502,6 +525,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										shiftY = Integer.parseInt(value);
+										break;
 									}
 
 									case "x": {
@@ -511,6 +535,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										x = Integer.parseInt(value);
+										break;
 									}
 
 									case "y": {
@@ -520,6 +545,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										y = Integer.parseInt(value);
+										break;
 									}
 
 									case "outlinecolor":
@@ -531,7 +557,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										outlineColor = outlineC;
-
 										break;
 									}
 
@@ -544,7 +569,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										fontSize = Integer.parseInt(value);
-
 										break;
 									}
 
@@ -556,7 +580,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 										}
 
 										outlineWidth = Integer.parseInt(value);
-
 										break;
 									}
 
@@ -669,6 +692,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 						if (!file.exists()) file.createNewFile();
 						ImageIO.write(img, "jpeg", file);
 
+						message.getChannel().sendMessage("  ..... ");
 						message.getChannel().sendMessage(ImgurUploader.upload(file));
 
 						Statistics.INSTANCE.addToStat("successful_meme_generations");
@@ -752,66 +776,64 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 		}
 	}
 
-	private void incorrectCommand(Message message) {
-		message.getChannel().sendMessage("Incorrect command usage");
-		message.getChannel().sendMessage("Usage: `" + getUsage() + "`");
-		message.getChannel().sendMessage("Example: `" + getExample() + "`");
-	}
-
 	@Nullable
-	private Vec2d getVecFromName(String locName, Vec2d imgDims, Vec2d textDims) {
+	private Vec2d getVecFromName(String locName, Vec2d imgDims, Vec2d objDims) {
 		locName = locName.toLowerCase(Locale.getDefault()).replace("corner", "").replace(" ", "").trim();
 
 		switch (locName) {
 			case "middle":
 			case "center": {
-				double x = (imgDims.x / 2.0) - (textDims.x / 2.0);
-				double y = (imgDims.y / 2.0) + (textDims.y / 2.0);
+				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
 
 				return new Vec2d(x, y);
 			}
+			case "right":
 			case "rightcenter":
 			case "centerright": {
-				double x = imgDims.x - textDims.x;
-				double y = (imgDims.y / 2.0) + (textDims.y / 2.0);
+				double x = imgDims.x - objDims.x;
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
 
 				return new Vec2d(x, y);
 			}
+			case "left":
 			case "leftcenter":
 			case "centerleft": {
 				double x = 0;
-				double y = (imgDims.y / 2.0) + (textDims.y / 2.0);
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
 
 				return new Vec2d(x, y);
 			}
+			case "up":
 			case "topcenter":
 			case "centertop":
 			case "top": {
-				double x = (imgDims.x / 2.0) + (textDims.x / 2.0);
-				double y = textDims.y;
+				double x = (imgDims.x / 2.0) + (objDims.x / 2.0);
+				double y = objDims.y;
 
 				return new Vec2d(x, y);
 			}
+			case "down":
 			case "bottomcenter":
 			case "centerbottom":
 			case "bottom": {
-				double x = (imgDims.x / 2.0) - (textDims.x / 2.0);
-				double y = imgDims.y + textDims.y;
+				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
+				double y = imgDims.y - objDims.y;
 
 				return new Vec2d(x, y);
 			}
 			case "topleft":
 			case "upperleft": {
 				double x = 0;
-				double y = textDims.y;
+				double y = objDims.y;
 
 				return new Vec2d(x, y);
 			}
 
 			case "topright":
 			case "upperright": {
-				double x = imgDims.x - textDims.x;
-				double y = textDims.y;
+				double x = imgDims.x - objDims.x;
+				double y = objDims.y;
 
 				return new Vec2d(x, y);
 			}
@@ -819,15 +841,15 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 			case "lowerleft":
 			case "bottomleft": {
 				double x = 0;
-				double y = imgDims.y + textDims.y;
+				double y = imgDims.y - objDims.y;
 
 				return new Vec2d(x, y);
 			}
 
 			case "lowerright":
 			case "bottomright": {
-				double x = imgDims.x - textDims.x;
-				double y = imgDims.y + textDims.y;
+				double x = imgDims.x - objDims.x;
+				double y = imgDims.y - objDims.y;
 
 				return new Vec2d(x, y);
 			}
