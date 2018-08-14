@@ -3,7 +3,6 @@ package com.teamwizardry.wizardrybot.api;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.teamwizardry.stickytape.utils.JsonLib;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,9 +19,7 @@ public class Weather {
 			windDegrees,
 			cloudsPercentage,
 			rain,
-			snow,
-			seaLevel,
-			groundLevel;
+			snow;
 	private long dateTime;
 	private Set<Pair> descriptions = new HashSet<>();
 
@@ -40,19 +37,30 @@ public class Weather {
 			}
 		}
 
-		temperature = JsonLib.parse(object).getDouble("main/temp");
-		temperatureHighest = JsonLib.parse(object).getDouble("main/temp_max");
-		temperatureLowest = JsonLib.parse(object).getDouble("main/temp_min");
-		pressure = JsonLib.parse(object).getDouble("main/pressure");
-		humidity = JsonLib.parse(object).getDouble("main/humidity");
-		windSpeed = JsonLib.parse(object).getDouble("wind/speed");
-		windDegrees = JsonLib.parse(object).getDouble("wind/degrees");
-		cloudsPercentage = JsonLib.parse(object).getDouble("clouds/all");
-		rain = JsonLib.parse(object).getDouble("rain/3h");
-		snow = JsonLib.parse(object).getDouble("snow/3h");
-		seaLevel = JsonLib.parse(object).getDouble("main/sea_level");
-		groundLevel = JsonLib.parse(object).getDouble("main/grnd_level");
-		dateTime = JsonLib.parse(object).getLong("dt");
+		if (object.has("dt"))
+			dateTime = object.getAsJsonPrimitive("dt").getAsLong();
+
+		if (object.has("main")) {
+			JsonObject main = object.getAsJsonObject("main");
+			temperature = main.getAsJsonPrimitive("temp").getAsDouble();
+			temperatureHighest = main.getAsJsonPrimitive("temp_max").getAsDouble();
+			temperatureLowest = main.getAsJsonPrimitive("temp_min").getAsDouble();
+			pressure = main.getAsJsonPrimitive("pressure").getAsDouble();
+			humidity = main.getAsJsonPrimitive("humidity").getAsDouble();
+		}
+
+		if (object.has("wind")) {
+			windSpeed = object.getAsJsonObject("wind").getAsJsonPrimitive("speed").getAsDouble();
+			windDegrees = object.getAsJsonObject("wind").getAsJsonPrimitive("deg").getAsDouble();
+		}
+
+		if (object.has("clouds"))
+			cloudsPercentage = object.getAsJsonObject("clouds").getAsJsonPrimitive("all").getAsDouble();
+
+		if (object.has("rain")) {
+			rain = object.getAsJsonObject("rain").getAsJsonPrimitive("3h").getAsDouble();
+			snow = object.getAsJsonObject("snow").getAsJsonPrimitive("3h").getAsDouble();
+		}
 	}
 
 	public double getTemperature() {
@@ -93,14 +101,6 @@ public class Weather {
 
 	public double getSnow() {
 		return snow;
-	}
-
-	public double getSeaLevel() {
-		return seaLevel;
-	}
-
-	public double getGroundLevel() {
-		return groundLevel;
 	}
 
 	public long getDateTime() {

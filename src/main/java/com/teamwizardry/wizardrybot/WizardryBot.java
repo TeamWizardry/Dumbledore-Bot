@@ -213,7 +213,7 @@ public class WizardryBot {
 
 			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
 
-				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
+			processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
 
 		File file = new File("amRestarting.json");
@@ -300,6 +300,8 @@ public class WizardryBot {
 				thread.start();
 			}
 		} else {
+
+			if (command.getCommand() == null || command.getCommand().isEmpty()) return;
 
 			for (String cmd : commands) {
 				if (command.getCommand().toLowerCase().equals(cmd.toLowerCase())) {
