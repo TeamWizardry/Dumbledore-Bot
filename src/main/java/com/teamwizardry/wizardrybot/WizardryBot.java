@@ -254,7 +254,6 @@ public class WizardryBot {
 		Statistics.INSTANCE.addToStat("messages_analyzed");
 
 		boolean shouldRespond = shouldRespond(command, message);
-		message.getChannel().sendMessage("---------");
 
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
