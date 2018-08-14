@@ -36,7 +36,6 @@ public class WizardryBot {
 
 	public static ArrayList<Module> modules = new ArrayList<>();
 	private static HashSet<String> commands = new HashSet<>();
-	private static HashSet<Message> context = new HashSet<>();
 
 	public static float THINKTHRESHHOLD = 0.85f;
 
@@ -328,10 +327,6 @@ public class WizardryBot {
 						if (!reverse.overrideIncorrectUsage()) {
 							message.getChannel().sendMessage("That's not how you use that command.");
 							ModuleAboutCommand.sendCommandMessage(message, reverse);
-						} else {
-							if (reverse instanceof ICommandModule) {
-
-							}
 						}
 					}
 				}
@@ -340,17 +335,6 @@ public class WizardryBot {
 	}
 
 	private static boolean shouldRespond(Command command, Message message) {
-		for (Iterator<Message> iterator = context.iterator(); iterator.hasNext(); ) {
-			Message context = iterator.next();
-			if (context.getAuthor().getId() == message.getAuthor().getId()
-					&& context.getChannel().getId() == message.getChannel().getId()) {
-				iterator.remove();
-				return true;
-			}
-		}
-
-		if (command.hasSaidHey()) context.add(message);
-
 		return command.hasSaidHey();
 	}
 
