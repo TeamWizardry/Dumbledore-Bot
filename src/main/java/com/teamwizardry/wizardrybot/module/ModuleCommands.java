@@ -40,19 +40,25 @@ public class ModuleCommands extends Module implements ICommandModule {
 
 	@Override
 	public String[] getAliases() {
-		return new String[0];
+		return new String[]{"commands", "cmds"};
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		StringBuilder commands = new StringBuilder();
 		for (Module module : WizardryBot.modules) {
 			if (module.isListed())
 				commands.append("- ").append(module.getName()).append("\n");
 		}
 
-		EmbedBuilder embed = new EmbedBuilder().setTitle("List of stuff I can do").setColor(Color.BLUE)
+		EmbedBuilder embed = new EmbedBuilder().setTitle("List of things I can do").setColor(Color.YELLOW)
 				.setDescription(commands.toString());
-		message.getChannel().sendMessage("Type 'hey albus, ' followed by the command in question, for example 'hey albus, what does the math command do?", embed);
+		message.getChannel().sendMessage("Type `hey albus` followed by a question for a command.\nFor example `hey albus, what does the math command do?`\nPlease note, you must say `command` after the command's name, otherwise i'll think it's a lookup question", embed);
+		return true;
+	}
+
+	@Override
+	public boolean overrideIncorrectUsage() {
+		return true;
 	}
 }

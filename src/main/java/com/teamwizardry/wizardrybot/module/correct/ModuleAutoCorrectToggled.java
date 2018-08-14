@@ -64,8 +64,8 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (!command.hasSaidHey()) return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (!command.hasSaidHey()) return true;
 
 		File file = new File("autocorrect.json");
 		if (!file.exists()) {
@@ -120,116 +120,114 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 			}
 		}
 
+		return true;
 	}
 
 	@Override
 	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
 		if (command.hasSaidHey()) return;
 
-		ThreadManager.INSTANCE.addThread(new Thread(() -> {
-			File file = new File("autocorrect.json");
-			if (!file.exists()) {
-				try {
-					file.createNewFile();
-				} catch (IOException ignored) {
-				}
-			}
-			boolean autoCorrect = false;
-			if (file.exists()) {
-				try {
-					JsonElement element = new JsonParser().parse(new FileReader(file));
-					if (!element.isJsonArray()) element = new JsonArray();
-
-					JsonArray array = element.getAsJsonArray();
-
-					for (JsonElement object : array) {
-						if (object.isJsonObject()) {
-							User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
-							if (user == null) continue;
-							autoCorrect = true;
-							break;
-						}
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-
-			if (!autoCorrect) return;
-
+		File file = new File("autocorrect.json");
+		if (!file.exists()) {
 			try {
-				HttpResponse<JsonNode> response = Unirest
-						.post("https://api.cognitive.microsoft.com/bing/v5.0/spellcheck?mode=proof&mkt=en-us")
-						.header("Ocp-Apim-Subscription-Key", Keys.BING_SPELL_CHECK_API)
-						.field("text", command.getCommandArguments())
-						.asJson();
-				JsonElement element = new JsonParser().parse(response.getBody().getObject().toString());
-				if (!element.isJsonObject()) return;
+				file.createNewFile();
+			} catch (IOException ignored) {
+			}
+		}
+		boolean autoCorrect = false;
+		if (file.exists()) {
+			try {
+				JsonElement element = new JsonParser().parse(new FileReader(file));
+				if (!element.isJsonArray()) element = new JsonArray();
 
-				String string = Utils.processMentions(command.getCommandArguments());
-				JsonObject object = element.getAsJsonObject();
-				if (object.has("flaggedTokens") && object.get("flaggedTokens").isJsonArray()) {
-					JsonArray array = object.getAsJsonArray("flaggedTokens");
-					for (JsonElement element1 : array) {
-						if (element1.isJsonObject()) {
-							JsonObject object1 = element1.getAsJsonObject();
-							if (object1.has("token") && object1.get("token").isJsonPrimitive()
-									&& object1.has("suggestions") && object1.get("suggestions").isJsonArray()) {
+				JsonArray array = element.getAsJsonArray();
 
-								String missspelledToken = object1.getAsJsonPrimitive("token").getAsString();
-								JsonArray suggestions = object1.getAsJsonArray("suggestions");
-								String bestSuggestion = null;
-								float bestScore = 0;
+				for (JsonElement object : array) {
+					if (object.isJsonObject()) {
+						User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
+						if (user == null) continue;
+						autoCorrect = true;
+						break;
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 
-								if (suggestions.size() <= 0) continue;
-								for (JsonElement suggestion : suggestions) {
-									if (!suggestion.isJsonObject()) continue;
-									JsonObject guess = suggestion.getAsJsonObject();
-									if (guess.has("score") && guess.get("score").isJsonPrimitive()
-											&& guess.has("suggestion") && guess.get("suggestion").isJsonPrimitive()) {
-										float score = guess.getAsJsonPrimitive("score").getAsFloat();
-										String guessSuggestion = guess.getAsJsonPrimitive("suggestion").getAsString();
-										if (bestScore < score) {
-											bestScore = score;
-											bestSuggestion = guessSuggestion;
-										}
+		if (!autoCorrect) return;
+
+		try {
+			HttpResponse<JsonNode> response = Unirest
+					.post("https://api.cognitive.microsoft.com/bing/v5.0/spellcheck?mode=proof&mkt=en-us")
+					.header("Ocp-Apim-Subscription-Key", Keys.BING_SPELL_CHECK_API)
+					.field("text", command.getArguments())
+					.asJson();
+			JsonElement element = new JsonParser().parse(response.getBody().getObject().toString());
+			if (!element.isJsonObject()) return;
+
+			String string = Utils.processMentions(command.getArguments());
+			JsonObject object = element.getAsJsonObject();
+			if (object.has("flaggedTokens") && object.get("flaggedTokens").isJsonArray()) {
+				JsonArray array = object.getAsJsonArray("flaggedTokens");
+				for (JsonElement element1 : array) {
+					if (element1.isJsonObject()) {
+						JsonObject object1 = element1.getAsJsonObject();
+						if (object1.has("token") && object1.get("token").isJsonPrimitive()
+								&& object1.has("suggestions") && object1.get("suggestions").isJsonArray()) {
+
+							String missspelledToken = object1.getAsJsonPrimitive("token").getAsString();
+							JsonArray suggestions = object1.getAsJsonArray("suggestions");
+							String bestSuggestion = null;
+							float bestScore = 0;
+
+							if (suggestions.size() <= 0) continue;
+							for (JsonElement suggestion : suggestions) {
+								if (!suggestion.isJsonObject()) continue;
+								JsonObject guess = suggestion.getAsJsonObject();
+								if (guess.has("score") && guess.get("score").isJsonPrimitive()
+										&& guess.has("suggestion") && guess.get("suggestion").isJsonPrimitive()) {
+									float score = guess.getAsJsonPrimitive("score").getAsFloat();
+									String guessSuggestion = guess.getAsJsonPrimitive("suggestion").getAsString();
+									if (bestScore < score) {
+										bestScore = score;
+										bestSuggestion = guessSuggestion;
 									}
 								}
+							}
 
-								if (bestScore >= 0.8) {
-									string = string.replace(missspelledToken, bestSuggestion);
-								}
+							if (bestScore >= 0.8) {
+								string = string.replace(missspelledToken, bestSuggestion);
 							}
 						}
 					}
 				}
-
-				message.delete();
-
-				Optional<User> probablyUser = message.getAuthor().asUser();
-				if (!probablyUser.isPresent()) return;
-				User user = probablyUser.get();
-
-				message.getServer().ifPresent(server -> {
-					Optional<String> nick = server.getNickname(user);
-					username = nick.orElseGet(() -> user.getDisplayName(server));
-				});
-
-				String finalString = string;
-				message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
-						.createWebhookBuilder()
-						.setAvatar(message.getAuthor().getAvatar())
-						.setName(username)
-						.create()
-						.whenComplete((webhook, throwable) -> {
-							Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
-							webhook.delete();
-						}));
-				Statistics.INSTANCE.addToStat("auto_corrections_made");
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
-		}));
 
+			message.delete();
+
+			Optional<User> probablyUser = message.getAuthor().asUser();
+			if (!probablyUser.isPresent()) return;
+			User user = probablyUser.get();
+
+			message.getServer().ifPresent(server -> {
+				Optional<String> nick = server.getNickname(user);
+				username = nick.orElseGet(() -> user.getDisplayName(server));
+			});
+
+			String finalString = string;
+			message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
+					.createWebhookBuilder()
+					.setAvatar(message.getAuthor().getAvatar())
+					.setName(username)
+					.create()
+					.whenComplete((webhook, throwable) -> {
+						Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
+						webhook.delete();
+					}));
+			Statistics.INSTANCE.addToStat("auto_corrections_made");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

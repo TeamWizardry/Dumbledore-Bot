@@ -48,7 +48,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 
 		final boolean[] helped = {false};
 		message.getChannel().getMessagesAsStream().limit(10).filter(message12 -> {
@@ -186,5 +186,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 		});
 		if (!helped[0])
 			message.getChannel().sendMessage("I don't see anyone to help here.");
+
+		return true;
 	}
 }

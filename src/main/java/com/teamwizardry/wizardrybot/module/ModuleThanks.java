@@ -46,12 +46,14 @@ public class ModuleThanks extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (command.isPotentiallyACommand()) return;
-		if (!result.getParameters().containsKey("albus")) return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (!result.getParameters().containsKey("albus")) return false;
+		if (!result.getParameters().containsKey("thanks")) return false;
 
 		String reply = result.getFulfillment().getSpeech();
 		message.getChannel().sendMessage(reply);
 		Statistics.INSTANCE.addToStat("compliments_given");
+
+		return true;
 	}
 }

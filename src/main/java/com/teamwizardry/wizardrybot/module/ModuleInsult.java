@@ -49,12 +49,12 @@ public class ModuleInsult extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (!result.getParameters().containsKey("curse")) return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (!result.getParameters().containsKey("curse")) return true;
 
 		String insult = result.getStringParameter("curse").toLowerCase().trim();
 		String any = result.getStringParameter("any").toLowerCase().trim();
-		if (insult.isEmpty()) return;
+		if (insult.isEmpty()) return true;
 
 		Random rand = new Random();
 
@@ -195,5 +195,6 @@ public class ModuleInsult extends Module implements ICommandModule {
 				}
 			}
 		}
+		return true;
 	}
 }

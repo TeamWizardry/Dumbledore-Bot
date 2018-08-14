@@ -6,11 +6,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.module.ModuleAboutCommand;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.message.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +36,7 @@ public class WizardryBot {
 
 	public static ArrayList<Module> modules = new ArrayList<>();
 	private static HashSet<String> commands = new HashSet<>();
-	private static HashSet<Channel> heyAlbused = new HashSet<>();
+	private static HashSet<Message> context = new HashSet<>();
 
 	public static float THINKTHRESHHOLD = 0.85f;
 
@@ -201,6 +201,7 @@ public class WizardryBot {
 				}
 			}
 			for (Module module : modules) {
+				commands.add(module.getName().toLowerCase());
 				if (module instanceof ICommandModule) {
 					ICommandModule cmd = (ICommandModule) module;
 					Collections.addAll(commands, cmd.getAliases());
@@ -210,7 +211,7 @@ public class WizardryBot {
 
 		api.addMessageCreateListener(messageCreateEvent -> {
 
-			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
+			if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
 
 				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
@@ -246,28 +247,14 @@ public class WizardryBot {
 
 		if (!carryOn.get()) return;
 
-		ThreadManager.INSTANCE.tick();
-
-		Statistics.INSTANCE.addToStat("messages_analyzed");
 		Command command = new Command(message, commands);
-		String after = command.getCommandArguments();
-		Result result = (command.hasSaidHey() && command.getResultWithoutHey() == null) ? (after.isEmpty() ? null : AI.INSTANCE.think(Utils.processMentions(after))) : command.getResultWithoutHey();
 
-		if (!command.hasSaidHey()) heyAlbused.remove(message.getChannel());
-		else heyAlbused.add(message.getChannel());
+		if (command.getResult() == null) return;
+		Result result = command.getResult();
+		Statistics.INSTANCE.addToStat("messages_analyzed");
 
 		boolean shouldRespond = shouldRespond(command, message);
-
-		if (shouldRespond
-				&& result != null
-				&& result.getAction().contains("smalltalk")
-				&& result.getScore() >= THINKTHRESHHOLD) {
-			String response = result.getFulfillment().getSpeech();
-			if (!response.isEmpty()) {
-				message.getChannel().sendMessage(response);
-				return;
-			}
-		}
+		message.getChannel().sendMessage("---------");
 
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
@@ -278,21 +265,15 @@ public class WizardryBot {
 
 					ICommandModule moduleCmd = (ICommandModule) module;
 
-					if (command.getCommandUsed() != null
-							&& Arrays.asList(moduleCmd.getAliases()).contains(command.getCommandUsed())) {
+					if (command.getCommand() != null
+							&& Arrays.asList(moduleCmd.getAliases()).contains(command.getCommand())) {
 
-						if (moduleCmd.getActionID() != null) {
-							if (doesPassResult(result, moduleCmd.getActionID())) {
-								priorityList.add(module);
-							}
-						} else priorityList.add(module);
+						priorityList.add(module);
 
-					} else if (moduleCmd.getAliases().length <= 0) {
-						if (moduleCmd.getActionID() != null) {
-							if (doesPassResult(result, moduleCmd.getActionID())) {
-								priorityList.add(module);
-							}
-						} else priorityList.add(module);
+					} else if (moduleCmd.getActionID() != null) {
+						if (doesPassResult(result, moduleCmd.getActionID())) {
+							priorityList.add(module);
+						}
 					}
 				}
 			}
@@ -305,15 +286,71 @@ public class WizardryBot {
 		}
 		if (highestPriority != null) {
 			if (highestPriority instanceof ICommandModule) {
-				((ICommandModule) highestPriority).onCommand(api, message, command, result);
-				Statistics.INSTANCE.addToStat("commands_triggered");
+
+				final ICommandModule cmdModule = ((ICommandModule) highestPriority);
+				Module finalHighestPriority = highestPriority;
+
+				Thread thread = new Thread(() -> {
+
+					if (!cmdModule.onCommand(api, message, command, result)) {
+						message.getChannel().sendMessage("That's not how you use that command.");
+						ModuleAboutCommand.sendCommandMessage(message, finalHighestPriority);
+					}
+					Statistics.INSTANCE.addToStat("commands_triggered");
+				});
+				thread.start();
 			}
-			highestPriority.onMessage(api, message, result, command);
+		} else {
+
+			for (String cmd : commands) {
+				if (command.getCommand().toLowerCase().equals(cmd.toLowerCase())) {
+
+					Module reverse = null;
+					for (Module module : modules) {
+						if (module.getName().toLowerCase().contains(cmd) || module.getName().toLowerCase().replace(" ", "").contains(cmd)
+								|| cmd.contains(module.getName().toLowerCase()) || cmd.contains(module.getName().toLowerCase().replace(" ", ""))) {
+							reverse = module;
+							break;
+						}
+						if (module instanceof ICommandModule) {
+							ICommandModule reverseCMD = (ICommandModule) module;
+							for (String alias : reverseCMD.getAliases()) {
+								if (alias.contains(cmd)) {
+									reverse = module;
+									break;
+								}
+							}
+						}
+					}
+
+					if (reverse != null) {
+						if (!reverse.overrideIncorrectUsage()) {
+							message.getChannel().sendMessage("That's not how you use that command.");
+							ModuleAboutCommand.sendCommandMessage(message, reverse);
+						} else {
+							if (reverse instanceof ICommandModule) {
+
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
 	private static boolean shouldRespond(Command command, Message message) {
-		return (command.hasSaidHey() || heyAlbused.contains(message.getChannel()));
+		for (Iterator<Message> iterator = context.iterator(); iterator.hasNext(); ) {
+			Message context = iterator.next();
+			if (context.getAuthor().getId() == message.getAuthor().getId()
+					&& context.getChannel().getId() == message.getChannel().getId()) {
+				iterator.remove();
+				return true;
+			}
+		}
+
+		if (command.hasSaidHey()) context.add(message);
+
+		return command.hasSaidHey();
 	}
 
 	public static boolean doesPassResult(@Nullable Result result, @NotNull String actionID) {

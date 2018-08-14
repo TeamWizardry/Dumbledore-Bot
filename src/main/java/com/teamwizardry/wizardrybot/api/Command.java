@@ -1,80 +1,77 @@
 package com.teamwizardry.wizardrybot.api;
 
 import ai.api.model.Result;
-import com.teamwizardry.wizardrybot.WizardryBot;
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.entity.message.Message;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 
 public class Command {
 
-	@NotNull
-	private final Message message;
-	@Nullable
-	private String commandUsed = null;
-	private boolean hasSaidHey;
+	private final Result result;
+	private String command = null;
 	private boolean isPotentiallyACommand;
-	@NotNull
-	private final String content;
+	private boolean hasSaidHey = false;
 	@Nullable
-	private Result resultWithoutHey = null;
+	private String afterHey = null;
 
 	public Command(@NotNull Message message, HashSet<String> commands) {
-		this.message = message;
+		String content = Utils.processMentions(message);
 
-		content = Utils.processMentions(message);
+		result = AI.INSTANCE.think(content.contains(",") ? content.split(",")[1].trim() : content);
 
-		Result result = null;
-		String[] splits = content.split(",");
-
-		if (splits[0].contains("hey albus") || splits[0].contains("hey alby")) {
+		String safeContent = content.toLowerCase().trim();
+		if (safeContent.startsWith("hey albus")
+				|| safeContent.startsWith("hey abluis")
+				|| safeContent.startsWith("hey ablus")
+				|| safeContent.startsWith("hey alby")
+				|| safeContent.startsWith("hey dumbledore")) {
 			hasSaidHey = true;
-		} else {
-			result = AI.INSTANCE.think(content.contains(",") ? splits[0] : content);
-			hasSaidHey = WizardryBot.doesPassResult(result, "input.hey");
-		}
-		if (hasSaidHey) Statistics.INSTANCE.addToStat("hey_albuses");
-
-		if (!hasSaidHey && result != null) {
-			resultWithoutHey = result;
+			Statistics.INSTANCE.addToStat("hey_albuses");
 		}
 
-		String[] split = content.trim().split(",");
-		isPotentiallyACommand = (split.length >= 2 && !split[1].trim().isEmpty());
+		if (content.contains(",")) {
+			afterHey = StringUtils.substringAfter(content, ",").trim();
+		} else if (StringUtils.countMatches(content, " ") > 1) {
+			// Two spaces over
+			afterHey = StringUtils.substringAfter(StringUtils.substringAfter(content, " ").trim(), " ").trim();
+		}
+
+		isPotentiallyACommand = afterHey != null && !afterHey.isEmpty();
 
 		// Now process the command used
-
 		if (hasSaidHey && isPotentiallyACommand) {
-			String[] hey = content.split(",");
-			String afterHey = hey[1].trim().toLowerCase();
+			for (String string : commands) {
 
-			for (String string : commands)
-				if (afterHey.startsWith(string.toLowerCase())) {
-					commandUsed = string.toLowerCase();
+				if (afterHey.toLowerCase().startsWith(string)) {
+					command = string;
+					afterHey = afterHey.substring(string.length()).trim();
 					break;
 				}
-		}
-	}
-
-	@Nullable
-	public String getCommandUsed() {
-		return commandUsed;
-	}
-
-	@NotNull
-	public String getCommandArguments() {
-		String[] hey = content.split(",");
-		if (hey.length < 2) {
-			return content.trim();
-		} else {
-			if (commandUsed != null) {
-				return hey[1].substring(hey[1].indexOf(commandUsed) + commandUsed.length()).trim();
-			} else {
-				return hey[1].trim();
+				if (afterHey.toLowerCase().startsWith(string.replace(" ", ""))) {
+					command = string;
+					afterHey = afterHey.substring(string.replace(" ", "").length()).trim();
+					break;
+				}
 			}
 		}
+	}
+
+	public String getCommand() {
+		return command;
+	}
+
+	@Nonnull
+	public String getArguments() {
+		String args = "";
+		if (afterHey != null && !afterHey.isEmpty()) {
+			args = afterHey;
+		}
+
+		return args;
 	}
 
 	public boolean hasSaidHey() {
@@ -85,8 +82,7 @@ public class Command {
 		return isPotentiallyACommand;
 	}
 
-	@Nullable
-	public Result getResultWithoutHey() {
-		return resultWithoutHey;
+	public Result getResult() {
+		return result;
 	}
 }

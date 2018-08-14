@@ -9,10 +9,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.teamwizardry.wizardrybot.api.Command;
-import com.teamwizardry.wizardrybot.api.ICommandModule;
-import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.RandUtil;
+import com.teamwizardry.wizardrybot.api.*;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 
@@ -30,7 +27,7 @@ public class ModuleGif extends Module implements ICommandModule {
 
 	@Override
 	public String getDescription() {
-		return "Will return a gif from tenor.com from the keyword used";
+		return "Will return a random gif from tenor.com from the keyword used";
 	}
 
 	@Override
@@ -49,23 +46,24 @@ public class ModuleGif extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (command.getArguments().isEmpty()) return false;
 
 		try {
-			HttpResponse<JsonNode> response = Unirest.get("https://api.tenor.com/v1/search?q=" + command.getCommandArguments().replace(" ", "_") + "&key=5TU1160NKPSY&limit=20").asJson();
+			HttpResponse<JsonNode> response = Unirest.get("https://api.tenor.com/v1/search?q=" + command.getArguments().replace(" ", "_") + "&key=5TU1160NKPSY&limit=20").asJson();
 
 			JsonObject object = (JsonObject) new JsonParser().parse(response.getBody().toString());
 
 			if (object == null || object.isJsonNull()) {
 				message.getChannel().sendMessage("Something went wrong. Sorry...");
-				return;
+				return true;
 			}
 
 			if (object.has("results") && object.get("results").isJsonArray()) {
 				JsonArray array = object.getAsJsonArray("results");
 
 				JsonElement element = array.get(RandUtil.nextInt(array.size() - 1));
-				if (element == null) return;
+				if (element == null) return true;
 				if (element.isJsonObject()) {
 					JsonObject resultObj = element.getAsJsonObject();
 
@@ -81,6 +79,8 @@ public class ModuleGif extends Module implements ICommandModule {
 
 								if (gifObj.has("url") && gifObj.get("url").isJsonPrimitive()) {
 									message.getChannel().sendMessage(gifObj.getAsJsonPrimitive("url").getAsString());
+									Statistics.INSTANCE.addToStat("gifs_served");
+									return true;
 								}
 							}
 						}
@@ -93,6 +93,6 @@ public class ModuleGif extends Module implements ICommandModule {
 			e.printStackTrace();
 		}
 
-		//	Statistics.INSTANCE.addToStat("gifs_provided");
+		return true;
 	}
 }

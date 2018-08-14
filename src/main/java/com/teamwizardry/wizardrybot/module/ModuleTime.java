@@ -58,13 +58,12 @@ public class ModuleTime extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		String[] args = command.getCommandArguments().replaceAll(" +", " ").split(" ");
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		String[] args = command.getArguments().replaceAll(" +", " ").split(" ");
 
 		if (args[0].equalsIgnoreCase("register") || args[0].equalsIgnoreCase("add")) {
 			if (args.length < 3) {
-				message.getChannel().sendMessage("Incorrect command usage.");
-				return;
+				return false;
 			}
 
 			String person = args[1].trim();
@@ -72,7 +71,7 @@ public class ModuleTime extends Module implements ICommandModule {
 
 			if (person.isEmpty()) {
 				message.getChannel().sendMessage("Name is empty.");
-				return;
+				return false;
 			}
 
 			boolean foundZone = false;
@@ -86,7 +85,7 @@ public class ModuleTime extends Module implements ICommandModule {
 
 			if (!foundZone) {
 				message.getChannel().sendMessage("Couldn't find timezone `" + timezone + "`. Try another.");
-				return;
+				return true;
 			} else {
 				message.getChannel().sendMessage("Timezone validated. Using `" + timezone + "`");
 			}
@@ -120,7 +119,7 @@ public class ModuleTime extends Module implements ICommandModule {
 		} else if (args[0].equalsIgnoreCase("remove")) {
 
 			if (args.length < 2) {
-				return;
+				return false;
 			}
 			String person = args[1];
 
@@ -138,7 +137,7 @@ public class ModuleTime extends Module implements ICommandModule {
 				JsonElement object = new JsonParser().parse(new FileReader(file));
 
 				if (object == null || object.isJsonNull()) {
-					return;
+					return true;
 				}
 
 				if (object.getAsJsonObject().has(person)) {
@@ -181,7 +180,7 @@ public class ModuleTime extends Module implements ICommandModule {
 				if (person == null) {
 					if (object.getAsJsonObject().entrySet().isEmpty()) {
 						message.getChannel().sendMessage("No person registered.");
-						return;
+						return true;
 					}
 
 					int longestName = 0;
@@ -219,7 +218,7 @@ public class ModuleTime extends Module implements ICommandModule {
 
 					if (!object.getAsJsonObject().has(person)) {
 						message.getChannel().sendMessage("`" + person + "` is not registered.");
-						return;
+						return true;
 					}
 
 					String zone = object.getAsJsonObject().getAsJsonPrimitive(person).getAsString();
@@ -253,5 +252,7 @@ public class ModuleTime extends Module implements ICommandModule {
 		} else {
 			message.getChannel().sendMessage("Incorrect command usage.");
 		}
+
+		return true;
 	}
 }

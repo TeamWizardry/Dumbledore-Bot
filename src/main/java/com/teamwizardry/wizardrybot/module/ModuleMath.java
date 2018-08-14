@@ -49,11 +49,10 @@ public class ModuleMath extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		String tEquation = command.getCommandArguments().toLowerCase();
-		if (tEquation.equals("")) {
-			message.getChannel().sendMessage("No equation or formula detected.");
-			return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		String tEquation = command.getArguments().toLowerCase();
+		if (tEquation.isEmpty()) {
+			return false;
 		}
 
 		double tInputScale = 100;
@@ -61,7 +60,7 @@ public class ModuleMath extends Module implements ICommandModule {
 		if (tEquation.contains(";")) {
 			String[] parts = tEquation.split(";");
 			if (parts.length <= 1) {
-				return;
+				return false;
 			}
 			if (parts.length == 2) {
 				tInputScale = Math.abs(Double.parseDouble(parts[0].trim()));
@@ -77,113 +76,118 @@ public class ModuleMath extends Module implements ICommandModule {
 		final double inputPrecision = tInputPrecision;
 		final String equation = tEquation;
 
-		if (equation.contains("x") || equation.contains("y")) {
+		if (equation.contains("x")
+				|| equation.contains("y")
+				|| equation.contains("z")
+				|| equation.contains("a")
+				|| equation.contains("t")
+				|| equation.contains("b")
+				|| equation.contains("c")
+				|| equation.contains("k")
+				|| equation.contains("i")
+				|| equation.contains("j")
+				|| equation.contains("n")) {
 
 			long origin = System.currentTimeMillis();
 
 			try {
 				new ExpressionBuilder(equation)
-						.variables("x")
+						.variables("x", "y", "z", "a", "b", "c", "k", "i", "j", "n", "m", "t", "q", "p")
 						.build()
-						.setVariable("x", 1)
 						.evaluate();
 			} catch (Exception e) {
 				if (e.getMessage().startsWith("Unknown function or variable")) {
 					message.getChannel().sendMessage(e.getMessage());
-					return;
+					return true;
 				}
 			}
 
-			String finalTEquation = tEquation;
-			ThreadManager.INSTANCE.addThread(new Thread(() -> {
+			BufferedImage image = new BufferedImage(1920, 1920, BufferedImage.TYPE_INT_RGB);
+			Graphics2D graphics = image.createGraphics();
+			graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_QUALITY);
+			graphics.setBackground(Color.WHITE);
+			graphics.clearRect(0, 0, 1920, 1920);
 
-				BufferedImage image = new BufferedImage(1920, 1920, BufferedImage.TYPE_INT_RGB);
-				Graphics2D graphics = image.createGraphics();
-				graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-						RenderingHints.VALUE_ANTIALIAS_ON);
-				graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-						RenderingHints.VALUE_RENDER_QUALITY);
-				graphics.setBackground(Color.WHITE);
-				graphics.clearRect(0, 0, 1920, 1920);
+			graphics.setColor(Color.BLACK);
+			graphics.setStroke(new BasicStroke(1));
+			double verticalScale = Math.min(inputScale, 1000);
+			double precision = Math.max(0.01, inputPrecision);
 
-				graphics.setColor(Color.BLACK);
-				graphics.setStroke(new BasicStroke(1));
-				double verticalScale = Math.min(inputScale, 1000);
-				double precision = Math.max(0.01, inputPrecision);
+			for (double x = 0; x < 1920.0 / 2.0; x += verticalScale) {
+				graphics.drawLine((int) (x + (1920.0 / 2.0)), 0, (int) (x + (1920.0 / 2.0)), 1920);
+			}
+			for (double x = 0; x > -1920.0 / 2.0; x -= verticalScale) {
+				graphics.drawLine((int) (x + (1920.0 / 2.0)), 0, (int) (x + (1920.0 / 2.0)), 1920);
+			}
 
-				for (double x = 0; x < 1920.0 / 2.0; x += verticalScale) {
-					graphics.drawLine((int) (x + (1920.0 / 2.0)), 0, (int) (x + (1920.0 / 2.0)), 1920);
+			for (double y = 0; y < 1920.0 / 2.0; y += verticalScale) {
+				graphics.drawLine(0, (int) (y + (1920.0 / 2.0)), 1920, (int) (y + (1920.0 / 2.0)));
+			}
+
+			for (double y = 0; y > -1920.0 / 2.0; y -= verticalScale) {
+				graphics.drawLine(0, (int) (y + (1920.0 / 2.0)), 1920, (int) (y + (1920.0 / 2.0)));
+			}
+
+			graphics.setStroke(new BasicStroke(3));
+			graphics.drawLine((int) (1920.0 / 2.0), 1920, (int) (1920.0 / 2.0), 0);
+			graphics.drawLine(1920, (int) (1920.0 / 2.0), 0, (int) (1920.0 / 2.0));
+
+			graphics.setStroke(new BasicStroke(5));
+			Vec2d prevPoint = null;
+			message.getChannel().sendMessage("Graphing your equation... This might take a minute.");
+			for (double x = -1920.0 / 2.0; x < 1920.0 / 2.0; x += precision) {
+
+				if (System.currentTimeMillis() - origin > 10000) {
+					message.getChannel().sendMessage("No. I may be a wizard but even magic can't draw that graph.");
+					return true;
 				}
-				for (double x = 0; x > -1920.0 / 2.0; x -= verticalScale) {
-					graphics.drawLine((int) (x + (1920.0 / 2.0)), 0, (int) (x + (1920.0 / 2.0)), 1920);
-				}
-
-				for (double y = 0; y < 1920.0 / 2.0; y += verticalScale) {
-					graphics.drawLine(0, (int) (y + (1920.0 / 2.0)), 1920, (int) (y + (1920.0 / 2.0)));
-				}
-
-				for (double y = 0; y > -1920.0 / 2.0; y -= verticalScale) {
-					graphics.drawLine(0, (int) (y + (1920.0 / 2.0)), 1920, (int) (y + (1920.0 / 2.0)));
-				}
-
-				graphics.setStroke(new BasicStroke(3));
-				graphics.drawLine((int) (1920.0 / 2.0), 1920, (int) (1920.0 / 2.0), 0);
-				graphics.drawLine(1920, (int) (1920.0 / 2.0), 0, (int) (1920.0 / 2.0));
-
-				graphics.setStroke(new BasicStroke(5));
-				Vec2d prevPoint = null;
-				message.getChannel().sendMessage("Graphing your equation... This might take a minute.");
-				for (double x = -1920.0 / 2.0; x < 1920.0 / 2.0; x += precision) {
-
-					if (System.currentTimeMillis() - origin > 10000) {
-						message.getChannel().sendMessage("NOPE. I may be a wizard but even magic can't draw that graph.");
-						return;
-					}
-
-					try {
-						Expression e = new ExpressionBuilder(equation)
-								.variables("x")
-								.build()
-								.setVariable("x", x);
-						double y = -e.evaluate();
-
-						if (Double.isFinite(y) && !Double.isNaN(y)) {
-							Vec2d vec = new Vec2d(x, y);
-							if (prevPoint == null) {
-								prevPoint = vec;
-							}
-							double x1 = vec.x, y1 = vec.y;
-
-							vec = new Vec2d((vec.x * verticalScale) + 1920.0 / 2.0, (vec.y * verticalScale) + 1920 / 2.0);
-							prevPoint = new Vec2d((prevPoint.x * verticalScale) + 1920.0 / 2.0, (prevPoint.y * verticalScale) + 1920 / 2.0);
-							graphics.drawLine((int) prevPoint.x, (int) prevPoint.y, (int) vec.x, (int) vec.y);
-							prevPoint = new Vec2d(x1, y1);
-						} else prevPoint = null;
-					} catch (Exception ignored) {
-					}
-				}
-
-				graphics.dispose();
 
 				try {
-					File file = new File("tempFile.png");
-					if (!file.exists()) file.createNewFile();
-					ImageIO.write(image, "png", file);
+					Expression e = new ExpressionBuilder(equation)
+							.variables("x")
+							.build()
+							.setVariable("x", x);
+					double y = -e.evaluate();
 
-					String url = ImgurUploader.upload(file);
+					if (Double.isFinite(y) && !Double.isNaN(y)) {
+						Vec2d vec = new Vec2d(x, y);
+						if (prevPoint == null) {
+							prevPoint = vec;
+						}
+						double x1 = vec.x, y1 = vec.y;
 
-					message.getChannel().sendMessage("Done! That took me " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - origin) + " seconds.");
-					EmbedBuilder builder = new EmbedBuilder();
-					builder.setTitle("Grapher")
-							.setDescription(finalTEquation)
-							.setImage(url)
-							.setUrl(url);
-					message.getChannel().sendMessage(builder);
-					Statistics.INSTANCE.addToStat("graphs_created");
-				} catch (IOException e) {
-					message.getChannel().sendMessage(e.getMessage());
+						vec = new Vec2d((vec.x * verticalScale) + 1920.0 / 2.0, (vec.y * verticalScale) + 1920 / 2.0);
+						prevPoint = new Vec2d((prevPoint.x * verticalScale) + 1920.0 / 2.0, (prevPoint.y * verticalScale) + 1920 / 2.0);
+						graphics.drawLine((int) prevPoint.x, (int) prevPoint.y, (int) vec.x, (int) vec.y);
+						prevPoint = new Vec2d(x1, y1);
+					} else prevPoint = null;
+				} catch (Exception ignored) {
 				}
-			}));
+			}
+
+			graphics.dispose();
+
+			try {
+				File file = new File("tempFile.png");
+				if (!file.exists()) file.createNewFile();
+				ImageIO.write(image, "png", file);
+
+				String url = ImgurUploader.upload(file);
+
+				message.getChannel().sendMessage("Done! That took me " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - origin) + " seconds.");
+				EmbedBuilder builder = new EmbedBuilder();
+				builder.setTitle("Grapher")
+						.setDescription(tEquation)
+						.setImage(url)
+						.setUrl(url);
+				message.getChannel().sendMessage(builder);
+				Statistics.INSTANCE.addToStat("graphs_created");
+			} catch (IOException e) {
+				message.getChannel().sendMessage(e.getMessage());
+			}
 
 		} else {
 			try {
@@ -193,5 +197,7 @@ public class ModuleMath extends Module implements ICommandModule {
 				message.getChannel().sendMessage(e.getMessage());
 			}
 		}
+
+		return true;
 	}
 }

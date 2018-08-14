@@ -69,53 +69,55 @@ public class ModuleNeedsMoreJpeg extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		ThreadManager.INSTANCE.addThread(new Thread(() -> {
-			try {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		try {
 
-				List<BufferedImage> images = Utils.stupidVerboseImageSearch(message);
-				if (images.isEmpty()) return;
-				UUID uuid = UUID.randomUUID();
-
-				BufferedImage buffer = images.get(0);
-				int originalHeight = buffer.getHeight();
-				int originalWidth = buffer.getWidth();
-
-				buffer = resize(buffer, 1280, originalHeight * 720 / originalWidth);
-
-				System.out.println("Needs more jpeg: compressing...");
-
-				File compressedImageFile = new File(uuid.toString() + ".jpeg");
-				OutputStream outputStream = new FileOutputStream(compressedImageFile);
-
-				Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
-				ImageWriter writer = writers.next();
-				ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);
-				writer.setOutput(ios);
-				ImageWriteParam param = writer.getDefaultWriteParam();
-				param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-				param.setCompressionQuality(0f);
-				writer.write(null, new IIOImage(buffer, null, null), param);
-
-				outputStream.close();
-				ios.close();
-				writer.dispose();
-
-				BufferedImage image = ImageIO.read(compressedImageFile);
-				image = resize(image, originalWidth, originalHeight);
-				ImageIO.write(image, "jpeg", compressedImageFile);
-
-				System.out.println("Needs more jpeg: uploading...");
-				String link = ImgurUploader.upload(compressedImageFile);
-
-				message.getChannel().sendMessage(link);
-				Statistics.INSTANCE.addToStat("jpeged_images");
-
-				compressedImageFile.delete();
-			} catch (Exception e) {
-				e.printStackTrace();
-				message.getChannel().sendMessage("That's enough jpeg...");
+			List<BufferedImage> images = Utils.stupidVerboseImageSearch(message);
+			if (images.isEmpty()) {
+				message.getChannel().sendMessage("No recent images found to jpeg");
+				return true;
 			}
-		}));
+			UUID uuid = UUID.randomUUID();
+
+			BufferedImage buffer = images.get(0);
+			int originalHeight = buffer.getHeight();
+			int originalWidth = buffer.getWidth();
+
+			buffer = resize(buffer, 1280, originalHeight * 720 / originalWidth);
+
+			System.out.println("Needs more jpeg: compressing...");
+
+			File compressedImageFile = new File(uuid.toString() + ".jpeg");
+			OutputStream outputStream = new FileOutputStream(compressedImageFile);
+
+			Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg");
+			ImageWriter writer = writers.next();
+			ImageOutputStream ios = ImageIO.createImageOutputStream(outputStream);
+			writer.setOutput(ios);
+			ImageWriteParam param = writer.getDefaultWriteParam();
+			param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+			param.setCompressionQuality(0f);
+			writer.write(null, new IIOImage(buffer, null, null), param);
+
+			outputStream.close();
+			ios.close();
+			writer.dispose();
+
+			BufferedImage image = ImageIO.read(compressedImageFile);
+			image = resize(image, originalWidth, originalHeight);
+			ImageIO.write(image, "jpeg", compressedImageFile);
+
+			System.out.println("Needs more jpeg: uploading...");
+			String link = ImgurUploader.upload(compressedImageFile);
+
+			message.getChannel().sendMessage(link);
+			Statistics.INSTANCE.addToStat("jpeged_images");
+
+			compressedImageFile.delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+			message.getChannel().sendMessage("That's enough jpeg...");
+		}
+		return true;
 	}
 }

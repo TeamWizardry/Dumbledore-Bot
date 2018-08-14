@@ -52,21 +52,21 @@ public class ModuleClearReminders extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		File file = new File("remind_me.json");
 		if (!file.exists()) {
 			message.getChannel().sendMessage("You don't have any reminders you silly goof.");
-			return;
+			return true;
 		}
 
 		if (!file.canRead()) {
 			message.getChannel().sendMessage("I'm having trouble remembering things right now. Sorry.");
-			return;
+			return true;
 		}
 
 		if (!file.canWrite()) {
 			message.getChannel().sendMessage("I'm having trouble remembering things right now. Sorry.");
-			return;
+			return true;
 		}
 
 		try {
@@ -74,7 +74,8 @@ public class ModuleClearReminders extends Module implements ICommandModule {
 			if (jsonElement.isJsonNull()) {
 				jsonElement = new JsonObject();
 			}
-			if (!jsonElement.isJsonObject()) return;
+			if (!jsonElement.isJsonObject()) return true;
+
 			JsonObject object = jsonElement.getAsJsonObject();
 
 			JsonArray array;
@@ -82,7 +83,7 @@ public class ModuleClearReminders extends Module implements ICommandModule {
 				array = object.getAsJsonArray("list");
 			} else {
 				message.getChannel().sendMessage("You don't have any reminders you silly goof.");
-				return;
+				return true;
 			}
 
 			Set<JsonObject> objects = new HashSet<>();
@@ -126,5 +127,6 @@ public class ModuleClearReminders extends Module implements ICommandModule {
 			System.out.println("-------------------------------------------------------");
 			e.printStackTrace();
 		}
+		return true;
 	}
 }

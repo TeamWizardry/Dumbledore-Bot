@@ -123,7 +123,7 @@ public class Utils {
 			object.addProperty("avatar_url", avatarURL);
 			try {
 				Unirest.post("https://discordapp.com/api/v6/webhooks/" + webhook.getIdAsString() + "/" + token)
-						.header("Content-Type", "application/json")
+						.header("Context-Type", "application/json")
 						.body(object.toString())
 						.asString();
 			} catch (UnirestException e) {

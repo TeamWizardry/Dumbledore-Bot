@@ -43,11 +43,11 @@ public class ModuleCompliment extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (result.getStringParameter("courtesy") == null) return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (result.getStringParameter("courtesy") == null) return true;
 
 		String compliment = result.getStringParameter("courtesy").toLowerCase().trim();
-		if (compliment.equals("")) return;
+		if (compliment.isEmpty()) return true;
 
 		Random rand = new Random();
 
@@ -67,5 +67,7 @@ public class ModuleCompliment extends Module implements ICommandModule {
 				break;
 			}
 		}
+
+		return true;
 	}
 }

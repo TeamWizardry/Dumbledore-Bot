@@ -58,12 +58,10 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 	public String getUsage() {
 		return "This command has several ways you can use it" + "\n" +
 				"hey albus, meme <list <meme to search for>>" + "\n" +
-				"hey albus, meme <id or link> <top text> [bottom text] but both need to be within `[ ]`. Bottom text is optional (see examples)" + "\n" +
+				"hey albus, meme <id or link> [top text] [bottom text] but both need to be within `[ ]`. Bottom text is optional (see examples)" + "\n" +
 				"hey albus, meme <id or link> <any amount of boxes you want in the meme>. A box is where you specify everything about the text and its formatting" + "\n\n" +
-				"{ } This is a box." + "\n" +
-				"{loc=top; text=slaps roof of car; color=magenta}" + "\n" +
-				"{loc=upper left; text=slaps roof of car; color=azure; outline_color=brown; outline_width=8; font=arial; italics=true; bold=true; caps=false; font_size=30}" + "\n\n" +
-				"The two required parameters in a box are `loc` and `text`. All else has a default." + "\n\n" +
+				"[ ] This is a box." + "\n" +
+				"If only the message or text is in the box without any parameters, it will default to a format. (see examples)" + "\n\n" +
 				"DO NOT WORRY ABOUT FORMATTING. You can add as many spaces and junk as you want in the boxes. I handle them properly so you can't easily fuck shit up." + "\n";
 	}
 
@@ -87,15 +85,8 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 	@Override
 	public String getExample() {
 		return "hey albus, meme 61579 [one does not simply] [make a meme]" + "\n" +
-				"hey albus, meme 143318362 {loc=center right; text=slaps roof of car; color=white}" + "\n" +
-				"hey albus, meme 143318362 {loc=bottomleft; text=slaps roof of car; color=royal blue, size = 234}" + "\n" +
-				"hey albus, meme 143318362 {loc=upper right; text=slaps roof of car; color=OldLace} {loc=center; text=this bad boy can hold so many features; outline color=red}" + "\n" +
-				"hey albus, meme 143318362 {loc=center; text=slaps roof of car; color=magenta, outline width = 42}" + "\n\n" +
-				"hey albus, meme 97630774\n" +
-				" [loc = center left; text = test1; x += 150; y -= 100] \n" +
-				" [loc = center right; text = test2; x -= 150; y -= 100] \n" +
-				" [link = https://i.imgur.com/IQvYr96.jpg; height = 300; loc = bottom left; x += 100] \n" +
-				" [link = https://i.imgur.com/jRuwgxf.jpg; height = 300; loc = bottom right; x -= 50]" + "\n\n" +
+				"hey albus, meme 143318362 [loc=bottomleft; text=slaps roof of car; color=royal blue, size = 234]" + "\n" +
+				"hey albus, meme 143318362 [loc=upper right; text=slaps roof of car; color=OldLace] [loc=center; text=this bad boy can hold so many features; outline color=red; outline width = 20]" + "\n" +
 				"hey albus, meme https://i.imgur.com/cotRgTQ.jpg\n" +
 				" [loc = center left; text = test1; x += 150; y -= 100] \n" +
 				" [loc = center right; text = test2; x -= 150; y -= 100] \n" +
@@ -103,27 +94,16 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				" [link = https://i.imgur.com/jRuwgxf.jpg; height = 300; loc = bottom right; x -= 50]";
 	}
 
-	private void incorrectCommand(Message message) {
-		message.getChannel().sendMessage("Incorrect command usage");
-		EmbedBuilder embed = new EmbedBuilder().setTitle(getName() + ":").setColor(Color.BLUE)
-				.setDescription("")
-				.addField("Description", getDescription(), false)
-				.addField("Usage", getUsage(), false)
-				.addField("Example", getExample(), false);
-		message.getChannel().sendMessage(embed);
-	}
-
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		String[] args = command.getCommandArguments().split(" ");
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		String[] args = command.getArguments().split(" ");
 
 		if (args.length <= 0) {
-			incorrectCommand(message);
-			return;
+			return false;
 		}
 
 		if (args[0].equalsIgnoreCase("list") && args.length > 1) {
-			String memeSearchQuery = command.getCommandArguments().replace("list", "").trim();
+			String memeSearchQuery = command.getArguments().replace("list", "").trim();
 
 			try {
 				Document document = Jsoup.connect("https://imgflip.com/memesearch?q=" + URLEncoder.encode(memeSearchQuery, "UTF-8")).get();
@@ -190,15 +170,14 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 					id = null;
 				} catch (MalformedURLException ignored) {
 					message.getChannel().sendMessage("No meme id or image link found in `" + id + "`");
-					incorrectCommand(message);
-					return;
+					return false;
 				}
 			}
 
 			String[] boxes = StringUtils.substringsBetween(message.getContent(), "[", "]");
 			if (boxes == null || boxes.length <= 0) {
 
-				incorrectCommand(message);
+				return false;
 
 			} else {
 				boolean hasParams = false;
@@ -222,7 +201,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 						for (String param : params) {
 							if (!param.contains("=")) {
 								corrections.add("Missing equals `=` in param `" + param + "`");
-								return;
+								return false;
 							}
 
 							String[] keyValue = param.split("=");
@@ -232,7 +211,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							else if (key.contains("xt")) key = "text";
 							else if (key.contains("link") || key.contains("img") || key.contains("image")) key = "url";
 
-							map.put(key.trim().toLowerCase(Locale.getDefault()).replace(" ", "_"), keyValue[1].trim());
+							map.put(key.trim().toLowerCase().replace(" ", "_"), keyValue[1].trim());
 						}
 
 						hasParams = !paramsMap.isEmpty();
@@ -266,7 +245,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 									if (!object.getAsJsonPrimitive("success").getAsBoolean()) {
 										message.getChannel().sendMessage("Can't create meme! Response:");
 										message.getChannel().sendMessage("```" + object.toString() + "```");
-										return;
+										return true;
 									}
 								}
 
@@ -309,7 +288,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 				if (bufferedImg == null || imgDims == null) {
 					message.getChannel().sendMessage("Something went wrong. I couldn't download the meme. Sorry.");
-					return;
+					return true;
 				}
 
 				// ---------- HAS PARAMS ---------- //
@@ -318,7 +297,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 						message.getChannel().sendMessage(correction);
 					}
 					if (!corrections.isEmpty()) {
-						incorrectCommand(message);
+						return false;
 					}
 
 					try {
@@ -647,7 +626,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							}
 
 							if (caps) {
-								text = text.toUpperCase(Locale.getDefault());
+								text = text.toUpperCase();
 							}
 
 							if (outlineWidth >= 0)
@@ -765,7 +744,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							JsonElement element = new JsonParser().parse(response.getBody().toString());
 							if (!element.isJsonObject()) {
 								message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-								return;
+								return true;
 							}
 
 							JsonObject object = element.getAsJsonObject();
@@ -774,7 +753,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								if (!object.getAsJsonPrimitive("success").getAsBoolean()) {
 									message.getChannel().sendMessage("Can't create meme! Response:");
 									message.getChannel().sendMessage("```" + object.toString() + "```");
-									return;
+									return true;
 								}
 							}
 
@@ -799,13 +778,15 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 			}
 
 		} else {
-			incorrectCommand(message);
+			return false;
 		}
+
+		return true;
 	}
 
 	@Nullable
 	private Vec2d getVecFromName(String locName, Vec2d imgDims, Vec2d objDims) {
-		locName = locName.toLowerCase(Locale.getDefault()).replace("corner", "").replace(" ", "").trim();
+		locName = locName.toLowerCase().replace("corner", "").replace(" ", "").trim();
 
 		switch (locName) {
 			case "middle":

@@ -58,39 +58,35 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 	}
 
 	public static void runLookup(Message message, final String anyString) {
-		ThreadManager.INSTANCE.addThread(new Thread(() -> {
+		String txt = anyString.replace(" ", "_");
 
-			String txt = anyString.replace(" ", "_");
+		if (!tryWikipediaSearch(message, txt)) {
+			if (!tryMerriamSearch(message, txt)) {
+				try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
-			if (!tryWikipediaSearch(message, txt)) {
-				if (!tryMerriamSearch(message, txt)) {
-					try (LanguageServiceClient language = LanguageServiceClient.create()) {
+					Document doc = Document.newBuilder().setContent(anyString).setType(Document.Type.PLAIN_TEXT).build();
 
-						Document doc = Document.newBuilder().setContent(anyString).setType(Document.Type.PLAIN_TEXT).build();
-
-						List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
-						for (Entity entity : entities) {
-							if (!tryWikipediaSearch(message, entity.getName())) {
-								if (!tryMerriamSearch(message, entity.getName())) {
-									if (entity.getName().contains(" ")) {
-										for (String words : entity.getName().split(" ")) {
-											if (!tryWikipediaSearch(message, words)) {
-												if (tryMerriamSearch(message, words))
-													Statistics.INSTANCE.addToStat("objective_questions_answered");
-												else Statistics.INSTANCE.addToStat("objective_questions_unanswered");
-											} else Statistics.INSTANCE.addToStat("objective_questions_answered");
-										}
+					List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
+					for (Entity entity : entities) {
+						if (!tryWikipediaSearch(message, entity.getName())) {
+							if (!tryMerriamSearch(message, entity.getName())) {
+								if (entity.getName().contains(" ")) {
+									for (String words : entity.getName().split(" ")) {
+										if (!tryWikipediaSearch(message, words)) {
+											if (tryMerriamSearch(message, words))
+												Statistics.INSTANCE.addToStat("objective_questions_answered");
+											else Statistics.INSTANCE.addToStat("objective_questions_unanswered");
+										} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 									}
-								} else Statistics.INSTANCE.addToStat("objective_questions_answered");
+								}
 							} else Statistics.INSTANCE.addToStat("objective_questions_answered");
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
+						} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 					}
-				} else Statistics.INSTANCE.addToStat("objective_questions_answered");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			} else Statistics.INSTANCE.addToStat("objective_questions_answered");
-
-		}));
+		} else Statistics.INSTANCE.addToStat("objective_questions_answered");
 	}
 
 	private static boolean tryMerriamSearch(Message message, String entity) {
@@ -154,26 +150,29 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 
 				return true;
 			} else {
-				ThreadManager.INSTANCE.addThread(new Thread(() -> {
-					try {
-						int i = 0;
-						for (MerriamInterpretter.MerriamResult merriam : results) {
-							i++;
-							Thread.sleep(100);
-							message.getChannel().sendMessage("", new EmbedBuilder()
-									.setTitle("**Meaning " + i + "**: **__" + merriam.id + "__** - " + merriam.partOfSpeech + " [" + merriam.date + "]").setColor(Color.MAGENTA)
-									.setDescription(merriam.finalFormattedDefinition.toString()));
-						}
-					} catch (InterruptedException e) {
-						e.printStackTrace();
+				try {
+					int i = 0;
+					for (MerriamInterpretter.MerriamResult merriam : results) {
+						i++;
+						Thread.sleep(100);
+						message.getChannel().sendMessage("", new EmbedBuilder()
+								.setTitle("**Meaning " + i + "**: **__" + merriam.id + "__** - " + merriam.partOfSpeech + " [" + merriam.date + "]").setColor(Color.MAGENTA)
+								.setDescription(merriam.finalFormattedDefinition.toString()));
 					}
-				}));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 
 				return true;
 			}
 		} catch (UnirestException e) {
 			return false;
 		}
+	}
+
+	@Override
+	public int getPriority() {
+		return -1;
 	}
 
 	private static boolean tryWikipediaSearch(Message message, String entity) {
@@ -230,60 +229,59 @@ public class ModuleObjectiveQuestion extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		ThreadManager.INSTANCE.addThread(new Thread(() -> {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		String any = result.getStringParameter("any");
+		if (any == null || any.isEmpty()) return false;
 
-			String any = result.getStringParameter("any");
+		String txt = any.replace(" ", "_");
 
-			String txt = any.replace(" ", "_");
-
-			boolean anySuccess = false;
-			if (command.getCommandArguments().contains("mean") || command.getCommandArguments().contains("defin")) {
-				if (tryMerriamSearch(message, txt)) {
-					anySuccess = true;
-				} else if (tryWikipediaSearch(message, txt)) {
-					anySuccess = true;
-				}
+		boolean anySuccess = false;
+		if (command.getArguments().contains("mean") || command.getArguments().contains("defin")) {
+			if (tryMerriamSearch(message, txt)) {
+				anySuccess = true;
+			} else if (tryWikipediaSearch(message, txt)) {
+				anySuccess = true;
 			}
-			if (!anySuccess) {
-				if (!tryWikipediaSearch(message, txt)) {
-					if (!tryMerriamSearch(message, txt)) {
+		}
+		if (!anySuccess) {
+			if (!tryWikipediaSearch(message, txt)) {
+				if (!tryMerriamSearch(message, txt)) {
 
-						try (LanguageServiceClient language = LanguageServiceClient.create()) {
+					try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
-							Document doc = Document.newBuilder().setContent(any).setType(Document.Type.PLAIN_TEXT).build();
+						Document doc = Document.newBuilder().setContent(any).setType(Document.Type.PLAIN_TEXT).build();
 
-							List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
-							for (Entity entity : entities) {
-								if (tryWikipediaSearch(message, entity.getName())) {
-									anySuccess = true;
-								} else if (tryMerriamSearch(message, entity.getName())) {
-									anySuccess = true;
-								} else if (entity.getName().contains(" ")) {
-									for (String words : entity.getName().split(" ")) {
-										if (tryWikipediaSearch(message, words)) {
-											anySuccess = true;
-										} else if (tryMerriamSearch(message, words)) {
-											anySuccess = true;
-										}
+						List<Entity> entities = language.analyzeEntities(doc, EncodingType.UTF8).getEntitiesList();
+						for (Entity entity : entities) {
+							if (tryWikipediaSearch(message, entity.getName())) {
+								anySuccess = true;
+							} else if (tryMerriamSearch(message, entity.getName())) {
+								anySuccess = true;
+							} else if (entity.getName().contains(" ")) {
+								for (String words : entity.getName().split(" ")) {
+									if (tryWikipediaSearch(message, words)) {
+										anySuccess = true;
+									} else if (tryMerriamSearch(message, words)) {
+										anySuccess = true;
 									}
 								}
 							}
-						} catch (Exception e) {
-							e.printStackTrace();
 						}
-					} else {
-						anySuccess = true;
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				} else {
 					anySuccess = true;
 				}
+			} else {
+				anySuccess = true;
 			}
+		}
 
-			if (!anySuccess) {
-				message.getChannel().sendMessage("I don't know what `" + any + "` is. Ask something similar.");
-				Statistics.INSTANCE.addToStat("objective_questions_unanswered");
-			} else Statistics.INSTANCE.addToStat("objective_questions_answered");
-		}));
+		if (!anySuccess) {
+			message.getChannel().sendMessage("I don't know what `" + any + "` is. Ask something similar.");
+			Statistics.INSTANCE.addToStat("objective_questions_unanswered");
+		} else Statistics.INSTANCE.addToStat("objective_questions_answered");
+		return true;
 	}
 }

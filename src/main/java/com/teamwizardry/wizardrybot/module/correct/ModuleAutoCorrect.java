@@ -52,85 +52,84 @@ public class ModuleAutoCorrect extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		ThreadManager.INSTANCE.addThread(new Thread(() -> {
-			if (!command.getCommandArguments().isEmpty()) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (!command.getArguments().isEmpty()) {
 
-				try {
-					HttpResponse<JsonNode> response = Unirest
-							.post("https://api.cognitive.microsoft.com/bing/v5.0/spellcheck?mode=proof&mkt=en-us")
-							.header("Ocp-Apim-Subscription-Key", Keys.BING_SPELL_CHECK_API)
-							.field("text", command.getCommandArguments())
-							.asJson();
-					JsonElement element = new JsonParser().parse(response.getBody().getObject().toString());
-					if (!element.isJsonObject()) return;
+			try {
+				HttpResponse<JsonNode> response = Unirest
+						.post("https://api.cognitive.microsoft.com/bing/v5.0/spellcheck?mode=proof&mkt=en-us")
+						.header("Ocp-Apim-Subscription-Key", Keys.BING_SPELL_CHECK_API)
+						.field("text", command.getArguments())
+						.asJson();
+				JsonElement element = new JsonParser().parse(response.getBody().getObject().toString());
+				if (!element.isJsonObject()) return true;
 
-					String string = Utils.processMentions(command.getCommandArguments());
-					JsonObject object = element.getAsJsonObject();
-					if (object.has("flaggedTokens") && object.get("flaggedTokens").isJsonArray()) {
-						JsonArray array = object.getAsJsonArray("flaggedTokens");
-						for (JsonElement element1 : array) {
-							if (element1.isJsonObject()) {
-								JsonObject object1 = element1.getAsJsonObject();
-								if (object1.has("token") && object1.get("token").isJsonPrimitive()
-										&& object1.has("suggestions") && object1.get("suggestions").isJsonArray()) {
+				String string = Utils.processMentions(command.getArguments());
+				JsonObject object = element.getAsJsonObject();
+				if (object.has("flaggedTokens") && object.get("flaggedTokens").isJsonArray()) {
+					JsonArray array = object.getAsJsonArray("flaggedTokens");
+					for (JsonElement element1 : array) {
+						if (element1.isJsonObject()) {
+							JsonObject object1 = element1.getAsJsonObject();
+							if (object1.has("token") && object1.get("token").isJsonPrimitive()
+									&& object1.has("suggestions") && object1.get("suggestions").isJsonArray()) {
 
-									String missspelledToken = object1.getAsJsonPrimitive("token").getAsString();
-									JsonArray suggestions = object1.getAsJsonArray("suggestions");
-									String bestSuggestion = null;
-									float bestScore = 0;
+								String missspelledToken = object1.getAsJsonPrimitive("token").getAsString();
+								JsonArray suggestions = object1.getAsJsonArray("suggestions");
+								String bestSuggestion = null;
+								float bestScore = 0;
 
-									if (suggestions.size() <= 0) continue;
-									for (JsonElement suggestion : suggestions) {
-										if (!suggestion.isJsonObject()) continue;
-										JsonObject guess = suggestion.getAsJsonObject();
-										if (guess.has("score") && guess.get("score").isJsonPrimitive()
-												&& guess.has("suggestion") && guess.get("suggestion").isJsonPrimitive()) {
-											float score = guess.getAsJsonPrimitive("score").getAsFloat();
-											String guessSuggestion = guess.getAsJsonPrimitive("suggestion").getAsString();
-											if (bestScore < score) {
-												bestScore = score;
-												bestSuggestion = guessSuggestion;
-											}
+								if (suggestions.size() <= 0) continue;
+								for (JsonElement suggestion : suggestions) {
+									if (!suggestion.isJsonObject()) continue;
+									JsonObject guess = suggestion.getAsJsonObject();
+									if (guess.has("score") && guess.get("score").isJsonPrimitive()
+											&& guess.has("suggestion") && guess.get("suggestion").isJsonPrimitive()) {
+										float score = guess.getAsJsonPrimitive("score").getAsFloat();
+										String guessSuggestion = guess.getAsJsonPrimitive("suggestion").getAsString();
+										if (bestScore < score) {
+											bestScore = score;
+											bestSuggestion = guessSuggestion;
 										}
 									}
+								}
 
-									if (bestScore >= 0.8) {
-										string = string.replace(missspelledToken, bestSuggestion);
-									}
+								if (bestScore >= 0.8) {
+									string = string.replace(missspelledToken, bestSuggestion);
 								}
 							}
 						}
 					}
-
-					message.delete();
-
-					Optional<User> probablyUser = message.getAuthor().asUser();
-					if (!probablyUser.isPresent()) return;
-					User user = probablyUser.get();
-
-					String s = Utils.processMentions(command.getCommandArguments().replace("me", "").trim());
-					message.getServer().ifPresent(server -> {
-						Optional<String> nick = server.getNickname(user);
-						username = nick.orElseGet(() -> user.getDisplayName(server));
-					});
-
-					String finalString = string;
-					message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
-							.createWebhookBuilder()
-							.setAvatar(message.getAuthor().getAvatar())
-							.setName(username)
-							.create()
-							.whenComplete((webhook, throwable) -> {
-								Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
-								webhook.delete();
-							}));
-
-					Statistics.INSTANCE.addToStat("auto_corrections_made");
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
+
+				message.delete();
+
+				Optional<User> probablyUser = message.getAuthor().asUser();
+				if (!probablyUser.isPresent()) return true;
+				User user = probablyUser.get();
+
+				String s = Utils.processMentions(command.getArguments().replace("me", "").trim());
+				message.getServer().ifPresent(server -> {
+					Optional<String> nick = server.getNickname(user);
+					username = nick.orElseGet(() -> user.getDisplayName(server));
+				});
+
+				String finalString = string;
+				message.getServerTextChannel().ifPresent(serverTextChannel -> serverTextChannel
+						.createWebhookBuilder()
+						.setAvatar(message.getAuthor().getAvatar())
+						.setName(username)
+						.create()
+						.whenComplete((webhook, throwable) -> {
+							Utils.sendWebhookMessage(webhook, finalString, username, message.getAuthor().getAvatar().getUrl().toString());
+							webhook.delete();
+						}));
+
+				Statistics.INSTANCE.addToStat("auto_corrections_made");
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		}));
+		}
+		return true;
 	}
 }

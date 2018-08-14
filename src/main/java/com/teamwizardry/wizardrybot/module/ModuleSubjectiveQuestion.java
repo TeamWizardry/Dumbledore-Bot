@@ -85,7 +85,7 @@ public class ModuleSubjectiveQuestion extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		String any = result.getStringParameter("any");
 
 		String opinion = result.getStringParameter("tell-me");
@@ -106,5 +106,7 @@ public class ModuleSubjectiveQuestion extends Module implements ICommandModule {
 			message.getChannel().sendMessage(responses.get(random));
 			Statistics.INSTANCE.addToStat("subjective_questions_answered");
 		}
+
+		return true;
 	}
 }

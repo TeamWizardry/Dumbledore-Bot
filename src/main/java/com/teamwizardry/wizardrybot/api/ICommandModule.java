@@ -10,5 +10,5 @@ public interface ICommandModule {
 
 	String[] getAliases();
 
-	void onCommand(DiscordApi api, Message message, Command command, Result result);
+	boolean onCommand(DiscordApi api, Message message, Command command, Result result);
 }

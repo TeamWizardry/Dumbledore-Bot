@@ -45,7 +45,7 @@ public class ModuleAboutSelf extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		EmbedBuilder embed = new EmbedBuilder().setTitle("About Me").setColor(Color.GREEN)
 				.setDescription("I am Professor Albus Dumbledore, the wisest robotic wizard in all of the discords!\n"
 						+ "My brain is powered by the artificially intelligent systems of Dialogflow, Google, as well as Microsoft/Bing.\n"
@@ -58,5 +58,7 @@ public class ModuleAboutSelf extends Module implements ICommandModule {
 						+ "And contact my maker here: [Team Wizardry Discord Invite](https://discord.gg/wsk2PBR)");
 		message.getChannel().sendMessage("", embed);
 		Statistics.INSTANCE.addToStat("times_asked_about_self");
+
+		return true;
 	}
 }

@@ -18,6 +18,10 @@ public abstract class Module {
 		return true;
 	}
 
+	public boolean overrideIncorrectUsage() {
+		return false;
+	}
+
 	public abstract String getName();
 
 	public abstract String getDescription();

@@ -45,14 +45,30 @@ public class ModuleAboutCommand extends Module implements ICommandModule {
 		return new String[0];
 	}
 
+	public static void sendCommandMessage(Message message, Module module) {
+		EmbedBuilder embed = new EmbedBuilder().setTitle(module.getName() + ":").setColor(Color.BLUE)
+				.setDescription("")
+				.addField("Description", module.getDescription(), false)
+				.addField("Usage", module.getUsage(), false)
+				.addField("Example", module.getExample(), false);
+
+		if (module instanceof ICommandModule) {
+			if (((ICommandModule) module).getAliases().length > 0)
+				embed.addField("Aliases", Arrays.toString(((ICommandModule) module).getAliases()), false);
+		}
+		message.getChannel().sendMessage(embed);
+		Statistics.INSTANCE.addToStat("commands_questioned");
+
+	}
+
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		Module askingAbout = null;
 		String cmdName = result.getStringParameter("any").toLowerCase().trim();
 
 		if (cmdName.isEmpty()) {
 			message.getChannel().sendMessage("That's not a command you silly goof.");
-			return;
+			return true;
 		}
 
 		for (Module module : WizardryBot.modules) {
@@ -69,21 +85,11 @@ public class ModuleAboutCommand extends Module implements ICommandModule {
 		}
 		if (askingAbout == null) {
 			message.getChannel().sendMessage("That's not a command you silly goof.");
-			return;
+			return true;
 		}
 
-		EmbedBuilder embed = new EmbedBuilder().setTitle(askingAbout.getName() + ":").setColor(Color.BLUE)
-				.setDescription("")
-				.addField("Description", askingAbout.getDescription(), false)
-				.addField("Usage", askingAbout.getUsage(), false)
-				.addField("Example", askingAbout.getExample(), false);
+		sendCommandMessage(message, askingAbout);
 
-		if (askingAbout instanceof ICommandModule) {
-			if (((ICommandModule) askingAbout).getAliases().length > 0)
-				embed.addField("Aliases", Arrays.toString(((ICommandModule) askingAbout).getAliases()), false);
-		}
-		message.getChannel().sendMessage("", embed);
-		Statistics.INSTANCE.addToStat("command_list_requested");
-
+		return true;
 	}
 }

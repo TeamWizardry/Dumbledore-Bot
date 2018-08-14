@@ -57,21 +57,21 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		if (message.getContent().length() > 256) {
 			message.getChannel().sendMessage("Your message is too long... Please condense it so the entire thing is less than 256 characters. Sorry... :(");
-			return;
+			return true;
 		}
 
 		String reminder = result.getStringParameter("any");
 
 		if (reminder.isEmpty()) {
 			message.getChannel().sendMessage("What would you like me to remind you about? Please rephrase your statement.");
-			return;
+			return true;
 		}
 		if (!result.getParameters().containsKey("date") && !result.getParameters().containsKey("time")) {
 			message.getChannel().sendMessage("Ok but when would you like me to remind you of that? Please rephrase your sentence.");
-			return;
+			return true;
 		}
 		Date date = result.getDateParameter("date");
 		Date time = result.getTimeParameter("time");
@@ -93,19 +93,19 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 		if (!file.exists()) {
 			message.getChannel().sendMessage("I'm having trouble preparing to memorize things right now. Sorry.");
 			System.out.println("ERROR: Cannot read remind_me.json");
-			return;
+			return true;
 		}
 
 		if (!file.canRead()) {
 			message.getChannel().sendMessage("I'm having trouble remembering things right now. Sorry.");
 			System.out.println("ERROR: Cannot read remind_me.json");
-			return;
+			return true;
 		}
 
 		if (!file.canWrite()) {
 			message.getChannel().sendMessage("I'm having trouble memorizing things right now. Sorry.");
 			System.out.println("ERROR: Cannot write to remind_me.json");
-			return;
+			return true;
 		}
 
 		try {
@@ -113,7 +113,8 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 			if (jsonElement.isJsonNull()) {
 				jsonElement = new JsonArray();
 			}
-			if (!jsonElement.isJsonArray()) return;
+			if (!jsonElement.isJsonArray()) return true;
+
 			JsonArray array = jsonElement.getAsJsonArray();
 
 			int count = 0;
@@ -128,13 +129,13 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 			}
 			if (count > 50) {
 				message.getChannel().sendMessage("No. You have too many reminders already.");
-				return;
+				return true;
 			}
 
 			DateTime finalDate = new DateTime(date != null ? date.getTime() : time != null ? time.getTime() : 0);
 			if (finalDate.compareTo(new DateTime()) <= 0) {
 				message.getChannel().sendMessage("I may be a wizard, but I prefer to use my powers in the present time. Please rephrase your statement.");
-				return;
+				return true;
 			}
 
 			JsonObject object1 = new JsonObject();
@@ -171,5 +172,6 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 			System.out.println("-------------------------------------------------------");
 			e.printStackTrace();
 		}
+		return true;
 	}
 }

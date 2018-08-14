@@ -43,10 +43,12 @@ public class ModuleEmotes extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (command.getCommandUsed() == null) return;
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		if (command.getCommand() == null || command.getCommand().isEmpty()) return true;
+		if (command.getCommand().toLowerCase().equals(getName().toLowerCase())) return false;
+
 		String emote = "";
-		switch (command.getCommandUsed()) {
+		switch (command.getCommand()) {
 			case "why":
 				emote = "ლ(ಠ益ಠლ)";
 				break;
@@ -116,14 +118,14 @@ public class ModuleEmotes extends Module implements ICommandModule {
 			}
 		}
 
-		if (emote.isEmpty()) return;
-		if (command.getCommandArguments().startsWith("me")) {
+		if (emote.isEmpty()) return false;
+		if (command.getArguments().startsWith("me")) {
 			message.delete();
 
 			String finalEmote = emote;
 			message.getAuthor().asUser().ifPresent(user -> {
 
-				String s = command.getCommandArguments().replace("me", "").trim();
+				String s = command.getArguments().replace("me", "").trim();
 
 				message.getServer().ifPresent(server -> {
 					Optional<String> nick = server.getNickname(user);
@@ -144,9 +146,11 @@ public class ModuleEmotes extends Module implements ICommandModule {
 
 		} else {
 			message.delete();
-			message.getChannel().sendMessage(emote + " " + command.getCommandArguments());
+			message.getChannel().sendMessage(emote + " " + command.getArguments());
 
 			Statistics.INSTANCE.addToStat("emotes_used");
 		}
+
+		return true;
 	}
 }

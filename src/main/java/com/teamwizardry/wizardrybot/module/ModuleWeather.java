@@ -45,7 +45,7 @@ public class ModuleWeather extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		if (result.getParameters().containsKey("geo-city")) {
 
 			String place = result.getStringParameter("geo-city");
@@ -57,7 +57,7 @@ public class ModuleWeather extends Module implements ICommandModule {
 
 				if (object == null || object.isJsonNull()) {
 					message.getChannel().sendMessage("Something went wrong while checking the weather. Sorry...");
-					return;
+					return true;
 				}
 
 				Weather weather = new Weather(object);
@@ -86,5 +86,7 @@ public class ModuleWeather extends Module implements ICommandModule {
 		} else {
 			message.getChannel().sendMessage("Which city or place would you like a forecast on? Restate your sentence.");
 		}
+
+		return false;
 	}
 }

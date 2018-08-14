@@ -51,10 +51,10 @@ public class ModuleAdmin extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		if ((String.valueOf(message.getAuthor().getId())).equals("136826665069314048")) {
 
-			String[] args = command.getCommandArguments().split(" ");
+			String[] args = command.getArguments().split(" ");
 
 			if (args.length == 0) {
 				message.getChannel().sendMessage("No args defined");
@@ -105,5 +105,7 @@ public class ModuleAdmin extends Module implements ICommandModule {
 				message.getChannel().sendMessage(builder.toString());
 			}
 		}
+
+		return true;
 	}
 }

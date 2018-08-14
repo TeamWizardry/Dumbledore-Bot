@@ -53,28 +53,28 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		EmojiGames emojiGames;
-		if (command.getCommandArguments().contains("movie")) emojiGames = EmojiGames.MOVIE;
-		else if (command.getCommandArguments().contains("show")) emojiGames = EmojiGames.SHOW;
-		else if (command.getCommandArguments().contains("mod")) emojiGames = EmojiGames.MOD;
+		if (command.getArguments().contains("movie")) emojiGames = EmojiGames.MOVIE;
+		else if (command.getArguments().contains("show")) emojiGames = EmojiGames.SHOW;
+		else if (command.getArguments().contains("mod")) emojiGames = EmojiGames.MOD;
 		else {
 			if (!games.containsKey(message.getChannel())) {
 				message.getChannel().sendMessage("Ok but what type of emoji game do you want to play? Your options are: movie, show, mod");
 			} else {
 				Game game = games.get(message.getChannel());
 				LevenshteinDistance distance = LevenshteinDistance.getDefaultInstance();
-				int check = distance.apply(game.name.toLowerCase(), command.getCommandArguments());
+				int check = distance.apply(game.name.toLowerCase(), command.getArguments());
 				if (check < 4) {
 					message.getChannel().sendMessage(EmojiManager.getForAlias("tada").getUnicode() + "Correct!" + EmojiManager.getForAlias("tada").getUnicode());
 					games.remove(message.getChannel());
 					Statistics.INSTANCE.addToStat("emoji_games_won");
 				} else message.getChannel().sendMessage("Incorrect! Try again!");
 			}
-			return;
+			return true;
 		}
 
-		if (emojiGames.getList() == null) return;
+		if (emojiGames.getList() == null) return true;
 
 		message.getServer().ifPresent(server -> {
 			if (carosal.get(server).size() == emojiGames.getList().size())
@@ -91,12 +91,13 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 		Game game = emojiGames.getList().get(random);
 		if (game == null) {
 			message.getChannel().sendMessage("Something went wrong...");
-			return;
+			return true;
 		}
 		carosal.put(message.getServer().get(), game);
 		games.put(message.getChannel(), game);
 
 		message.getChannel().sendMessage("Alright! Guess the " + emojiGames.name().toLowerCase() + ":\n" + game.readableEmojiString);
 		Statistics.INSTANCE.addToStat("emoji_games_played");
+		return true;
 	}
 }

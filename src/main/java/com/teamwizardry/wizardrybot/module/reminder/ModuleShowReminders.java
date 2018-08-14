@@ -56,21 +56,21 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
 		File file = new File("remind_me.json");
 		if (!file.exists()) {
 			message.getChannel().sendMessage("You don't have any reminders you silly goof.");
-			return;
+			return true;
 		}
 
 		if (!file.canRead()) {
 			message.getChannel().sendMessage("I'm having trouble remembering things right now. Sorry.");
-			return;
+			return true;
 		}
 
 		if (!file.canWrite()) {
 			message.getChannel().sendMessage("I'm having trouble remembering things right now. Sorry.");
-			return;
+			return true;
 		}
 
 		try {
@@ -135,5 +135,6 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 			System.out.println("-------------------------------------------------------");
 			e.printStackTrace();
 		}
+		return true;
 	}
 }

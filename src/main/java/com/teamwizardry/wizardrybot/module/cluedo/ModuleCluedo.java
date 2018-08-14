@@ -49,13 +49,11 @@ public class ModuleCluedo extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
-		String[] args = command.getCommandArguments().toLowerCase().split(" ");
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+		String[] args = command.getArguments().toLowerCase().split(" ");
 
 		if (args.length == 0 || args[0].isEmpty()) {
-			message.getChannel().sendMessage(PREFIX + "Incorrect command usage");
-			message.getChannel().sendMessage(PREFIX + "Usage: " + getUsage());
-			return;
+			return false;
 		}
 
 		boolean isAdmin = isAdmin(message.getServer().get(), message.getUserAuthor().get());
@@ -63,7 +61,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 		if (args[0].equals("create")) {
 			if (!isAdmin) {
 				message.getChannel().sendMessage(PREFIX + "Only admins can use this command.");
-				return;
+				return true;
 			}
 
 			if (GAME_INSTANCE != null) {
@@ -76,18 +74,18 @@ public class ModuleCluedo extends Module implements ICommandModule {
 		if (args[0].equals("start")) {
 			if (!isAdmin) {
 				message.getChannel().sendMessage(PREFIX + "Only admins can use this command.");
-				return;
+				return true;
 			}
 
 			if (GAME_INSTANCE.getPlayers().size() < 3) {
 				message.getChannel().sendMessage(PREFIX + "Not enough players! " + (3 - GAME_INSTANCE.getPlayers().size()) + " more players required.");
-				return;
+				return true;
 			}
 
 			if (GAME_INSTANCE == null) {
 				message.getChannel().sendMessage(PREFIX + "No game of cluedo is currently running.");
 				message.getChannel().sendMessage(PREFIX + "Type /cluedo create to make a new game.");
-				return;
+				return true;
 			}
 
 			GAME_INSTANCE.start();
@@ -114,12 +112,12 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				message.getChannel().sendMessage(PREFIX + "No game of cluedo is currently running.");
 				if (isAdmin)
 					message.getChannel().sendMessage(PREFIX + "Type /cluedo create to make a new game.");
-				return;
+				return true;
 			}
 
 			if (GAME_INSTANCE.getPlayers().size() >= 6) {
 				message.getChannel().sendMessage(PREFIX + "The game reached the maximum amount of players possible (6). You can't join the game.");
-				return;
+				return true;
 			}
 
 			User user = message.getUserAuthor().get();
@@ -130,7 +128,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				String character = GAME_INSTANCE.getUserCharacter(user);
 				if (character == null || character.isEmpty()) {
 					message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " Something went wrong. You can't join the game.");
-					return;
+					return true;
 				}
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " has joined the game!");
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " Welcome, " + StringUtils.capitalize(character));
@@ -138,6 +136,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " You are already in the game.");
 			}
 		}
+		return true;
 	}
 
 	private boolean isAdmin(Server server, User user) {
