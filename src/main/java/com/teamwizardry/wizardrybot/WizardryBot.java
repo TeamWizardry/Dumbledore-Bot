@@ -211,7 +211,7 @@ public class WizardryBot {
 
 		api.addMessageCreateListener(messageCreateEvent -> {
 
-			if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
+			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
 
 				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
