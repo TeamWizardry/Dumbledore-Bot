@@ -42,6 +42,7 @@ public class Domains {
 	}
 
 	public boolean isLinkWhitelisted(String link) {
+		if (link == null || link.isEmpty()) return false;
 		String domain;
 		if (link.startsWith("https://")) {
 			domain = StringUtils.substringBetween(link, "https://", "/");

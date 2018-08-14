@@ -289,13 +289,27 @@ public class Utils {
 
 	@Nullable
 	public static String findURLInString(String string) {
-		for (String word : string.split(" ")) {
+		if (string == null) return null;
+
+		string = string.trim();
+		if (string.isEmpty()) return null;
+
+		if (string.contains(" ")) {
+			for (String word : string.split(" ")) {
+				try {
+					new URL(word);
+					return word;
+				} catch (MalformedURLException ignored) {
+				}
+			}
+		} else {
 			try {
-				new URL(word);
-				return word;
+				new URL(string);
+				return string;
 			} catch (MalformedURLException ignored) {
 			}
 		}
+
 		return null;
 	}
 

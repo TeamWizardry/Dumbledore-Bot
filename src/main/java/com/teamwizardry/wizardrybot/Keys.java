@@ -5,9 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public final class Keys {
 
@@ -23,13 +20,6 @@ public final class Keys {
 		try {
 			HttpResponse<String> response = Unirest.get("https://wizardry-discord-bot.appspot.com/?key=" + KEY).asString();
 
-			try {
-				new JSONObject(response.getBody());
-			} catch (JSONException ex) {
-				System.out.println("Kindly fuck off pls.");
-				return false;
-			}
-
 			JsonElement element = new JsonParser().parse(response.getBody());
 
 			if (element == null || !element.isJsonObject()) {
@@ -41,16 +31,14 @@ public final class Keys {
 				Keys.BING_SPELL_CHECK_API = object.getAsJsonPrimitive("bing_spell_check").getAsString();
 				Keys.MERRIAM_DICTIONARY_KEY = object.getAsJsonPrimitive("merriam_dictionary").getAsString();
 				Keys.PASSWORD = object.getAsJsonPrimitive("password").getAsString();
-				//Keys.CLOUDINARY_NAME = object.getAsJsonPrimitive("cloudinary_name").getAsString();
-				//Keys.CLOUDINARY_KEY = object.getAsJsonPrimitive("cloudinary_key").getAsString();
-				//Keys.CLOUDINARY_SECRET = object.getAsJsonPrimitive("cloudinary_secret").getAsString();
 				Keys.WIZARDRY_DIALOGFLOW_API = object.getAsJsonPrimitive("wizardry_dialogflow_api").getAsString();
 				Keys.IMGUR = object.getAsJsonPrimitive("imgur").getAsString();
 				Keys.YOUTUBE = object.getAsJsonPrimitive("youtube").getAsString();
 				return true;
 			}
-		} catch (UnirestException ignored) {
-			ignored.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Kindly fuck off please.");
+			e.printStackTrace();
 		}
 
 		return false;

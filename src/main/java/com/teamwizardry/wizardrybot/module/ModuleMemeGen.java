@@ -27,6 +27,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.*;
 
@@ -56,12 +58,12 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 	public String getUsage() {
 		return "This command has several ways you can use it" + "\n" +
 				"hey albus, meme <list <meme to search for>>" + "\n" +
-				"hey albus, meme <id> <top text> [bottom text] but both need to be within `[ ]`. Bottom text is optional (see examples)" + "\n" +
-				"hey albus, meme <id> <any amount of boxes you want in the meme>. A box is where you specify everything about the text and its formatting" + "\n" +
+				"hey albus, meme <id or link> <top text> [bottom text] but both need to be within `[ ]`. Bottom text is optional (see examples)" + "\n" +
+				"hey albus, meme <id or link> <any amount of boxes you want in the meme>. A box is where you specify everything about the text and its formatting" + "\n\n" +
 				"{ } This is a box." + "\n" +
 				"{loc=top; text=slaps roof of car; color=magenta}" + "\n" +
-				"{loc=upper left; text=slaps roof of car; color=azure; outline_color=brown; outline_width=8; font=arial; italics=true; bold=true; caps=false; font_size=30}" + "\n" +
-				"The two required parameters in a box are `loc` and `text`. All else has a default." + "\n" +
+				"{loc=upper left; text=slaps roof of car; color=azure; outline_color=brown; outline_width=8; font=arial; italics=true; bold=true; caps=false; font_size=30}" + "\n\n" +
+				"The two required parameters in a box are `loc` and `text`. All else has a default." + "\n\n" +
 				"DO NOT WORRY ABOUT FORMATTING. You can add as many spaces and junk as you want in the boxes. I handle them properly so you can't easily fuck shit up." + "\n";
 	}
 
@@ -93,20 +95,28 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				" [loc = center left; text = test1; x += 150; y -= 100] \n" +
 				" [loc = center right; text = test2; x -= 150; y -= 100] \n" +
 				" [link = https://i.imgur.com/IQvYr96.jpg; height = 300; loc = bottom left; x += 100] \n" +
+				" [link = https://i.imgur.com/jRuwgxf.jpg; height = 300; loc = bottom right; x -= 50]" + "\n\n" +
+				"hey albus, meme https://i.imgur.com/cotRgTQ.jpg\n" +
+				" [loc = center left; text = test1; x += 150; y -= 100] \n" +
+				" [loc = center right; text = test2; x -= 150; y -= 100] \n" +
+				" [link = https://i.imgur.com/IQvYr96.jpg; height = 300; loc = bottom left; x += 100] \n" +
 				" [link = https://i.imgur.com/jRuwgxf.jpg; height = 300; loc = bottom right; x -= 50]";
 	}
 
 	private void incorrectCommand(Message message) {
 		message.getChannel().sendMessage("Incorrect command usage");
-		message.getChannel().sendMessage("Usage: `" + getUsage() + "`");
-		message.getChannel().sendMessage("Example: `" + getExample() + "`");
+		EmbedBuilder embed = new EmbedBuilder().setTitle(getName() + ":").setColor(Color.BLUE)
+				.setDescription("")
+				.addField("Description", getDescription(), false)
+				.addField("Usage", getUsage(), false)
+				.addField("Example", getExample(), false);
+		message.getChannel().sendMessage(embed);
 	}
 
 	@Override
 	public void onCommand(DiscordApi api, Message message, Command command, Result result) {
 		String[] args = command.getCommandArguments().split(" ");
 
-		Statistics.INSTANCE.addToStat("attempted_meme_generations");
 		if (args.length <= 0) {
 			incorrectCommand(message);
 			return;
@@ -167,11 +177,22 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				e.printStackTrace();
 			}
 		} else if (args.length > 1) {
+			Statistics.INSTANCE.addToStat("attempted_meme_generations");
+
 			String id = args[0].trim();
+			String url = null;
 
 			if (!StringUtils.isNumeric(id)) {
-				message.getChannel().sendMessage("Invalid meme id. Try again.");
-				return;
+
+				try {
+					new URL(id);
+					url = id;
+					id = null;
+				} catch (MalformedURLException ignored) {
+					message.getChannel().sendMessage("No meme id or image link found in `" + id + "`");
+					incorrectCommand(message);
+					return;
+				}
 			}
 
 			String[] boxes = StringUtils.substringsBetween(message.getContent(), "[", "]");
@@ -183,54 +204,46 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 				boolean hasParams = false;
 				Set<String> corrections = new HashSet<>();
 				HashMap<String, HashMap<String, String>> paramsMap = new HashMap<>();
+				Vec2d imgDims = null;
+				BufferedImage bufferedImg = null;
 
-				for (String box : boxes) {
-					if (!box.contains(";")) {
-						break;
-					}
-
-					HashMap<String, String> map = new HashMap<>();
-					paramsMap.put(box, map);
-
-					String[] params = box.split(";");
-
-					for (String param : params) {
-						if (!param.contains("=")) {
-							corrections.add("Missing equals `=` in param `" + param + "`");
-							return;
+				// --- Parse box parameters --- //
+				{
+					for (String box : boxes) {
+						if (!box.contains(";")) {
+							break;
 						}
 
-						String[] keyValue = param.split("=");
+						HashMap<String, String> map = new HashMap<>();
+						paramsMap.put(box, map);
 
-						String key = keyValue[0];
-						if (key.contains("loc") || key.contains("pos")) key = "loc";
-						else if (key.contains("xt")) key = "text";
-						else if (key.contains("link") || key.contains("img") || key.contains("image")) key = "url";
+						String[] params = box.split(";");
 
-						map.put(key.trim().toLowerCase(Locale.getDefault()).replace(" ", "_"), keyValue[1].trim());
+						for (String param : params) {
+							if (!param.contains("=")) {
+								corrections.add("Missing equals `=` in param `" + param + "`");
+								return;
+							}
+
+							String[] keyValue = param.split("=");
+
+							String key = keyValue[0];
+							if (key.contains("loc") || key.contains("pos")) key = "loc";
+							else if (key.contains("xt")) key = "text";
+							else if (key.contains("link") || key.contains("img") || key.contains("image")) key = "url";
+
+							map.put(key.trim().toLowerCase(Locale.getDefault()).replace(" ", "_"), keyValue[1].trim());
+						}
+
+						hasParams = !paramsMap.isEmpty();
 					}
-
-					hasParams = !paramsMap.isEmpty();
 				}
 
-
-				// ---------- HAS PARAMS ---------- //
-				if (hasParams) {
-					for (String correction : corrections) {
-						message.getChannel().sendMessage(correction);
-					}
-					if (!corrections.isEmpty()) {
-						incorrectCommand(message);
-					}
-
-					Vec2d imgDims = null;
-					String imgurURL = null;
+				// --- Download image with data --- //
+				{
 
 					try {
-
-
-						// --- Download image data --- //
-						{
+						if (id != null) {
 							HttpResponse<JsonNode> response = Unirest.post("https://api.imgflip.com/caption_image")
 									.field("username", "imgflip_hubot")
 									.field("password", "imgflip_hubot")
@@ -244,8 +257,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							} else {
 								JsonElement element = new JsonParser().parse(response.getBody().toString());
 								if (!element.isJsonObject()) {
-									message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-									return;
+									throw new Exception();
 								}
 
 								JsonObject object = element.getAsJsonObject();
@@ -263,42 +275,61 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 									if (dataObject.has("url") && dataObject.get("url").isJsonPrimitive()) {
 
-										JsonObject obj = ImgurUploader.uploadWithJson(dataObject.getAsJsonPrimitive("url").getAsString());
-
-										if (obj == null) {
-											message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
+										bufferedImg = Utils.downloadURLAsImage(message, dataObject.getAsJsonPrimitive("url").getAsString());
+										if (bufferedImg == null) {
+											message.getChannel().sendMessage("Something went wrong. I couldn't download the following image: " + dataObject.getAsJsonPrimitive("url").getAsString() + " from meme id " + id);
 											throw new Exception();
 										}
 
-										{
+										imgDims = new Vec2d(bufferedImg.getWidth(), bufferedImg.getHeight());
 
-											JsonObject data = obj.getAsJsonObject("data");
-											if (data == null || !data.isJsonObject()) {
-												message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-												throw new Exception();
-											}
-
-											imgDims = new Vec2d(data.getAsJsonPrimitive("width").getAsInt(), data.getAsJsonPrimitive("height").getAsInt());
-											imgurURL = data.getAsJsonPrimitive("link").getAsString();
-										}
 									}
 								}
 							}
-						}
+						} else if (url != null) {
 
-						if (imgDims == null || imgurURL == null) {
+							bufferedImg = Utils.downloadURLAsImage(message, url);
+							if (bufferedImg == null) {
+								message.getChannel().sendMessage("Something went wrong. I couldn't download the following image: " + url);
+								throw new Exception();
+							}
+
+							imgDims = new Vec2d(bufferedImg.getWidth(), bufferedImg.getHeight());
+
+						} else {
 							message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
 							throw new Exception();
 						}
 
-						BufferedImage img = Utils.downloadURLAsImage(null, imgurURL);
-						Graphics2D graphics = img.createGraphics();
+
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				if (bufferedImg == null || imgDims == null) {
+					message.getChannel().sendMessage("Something went wrong. I couldn't download the meme. Sorry.");
+					return;
+				}
+
+				// ---------- HAS PARAMS ---------- //
+				if (hasParams) {
+					for (String correction : corrections) {
+						message.getChannel().sendMessage(correction);
+					}
+					if (!corrections.isEmpty()) {
+						incorrectCommand(message);
+					}
+
+					try {
+
+						Graphics2D graphics = bufferedImg.createGraphics();
 						graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 								RenderingHints.VALUE_ANTIALIAS_ON);
 						graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
 								RenderingHints.VALUE_RENDER_QUALITY);
 
-						// LOOP IMAGES
+						// --- LOOP IMAGES --- //
 						for (int j = 0; j < boxes.length; j++) {
 							String box = boxes[j];
 							HashMap<String, String> params = paramsMap.get(box);
@@ -408,7 +439,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								}
 							}
 
-							// --- DRAW --- //
 							if (pasteURL == null) {
 								message.getChannel().sendMessage("Couldn't find link in box `{" + box + "}`");
 								continue;
@@ -456,7 +486,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							graphics.translate(-loc.x, -loc.y);
 						}
 
-						// LOOP TEXT
+						// --- LOOP TEXT --- //
 						boxLoop1:
 						for (int j = 0; j < boxes.length; j++) {
 							String box = boxes[j];
@@ -681,8 +711,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 								graphics.translate(-loc.x, -loc.y - textBounds.getHeight() * i);
 							}
-
-							// --- URL --- //
 						}
 
 
@@ -690,7 +718,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 						File file = new File("downloads/meme_" + id + "_" + UUID.randomUUID() + ".jpeg");
 						if (!file.exists()) file.createNewFile();
-						ImageIO.write(img, "jpeg", file);
+						ImageIO.write(bufferedImg, "jpeg", file);
 
 						message.getChannel().sendMessage(ImgurUploader.upload(file));
 
@@ -706,7 +734,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 
 				// ---------- DOESNT HAVE PARAMS ---------- //
-				if (!hasParams) {
+				if (!hasParams && id != null) {
 					try {
 						HttpResponse<JsonNode> response = null;
 
@@ -754,9 +782,9 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								JsonObject dataObject = object.getAsJsonObject("data");
 
 								if (dataObject.has("url") && dataObject.get("url").isJsonPrimitive()) {
-									String url = dataObject.getAsJsonPrimitive("url").getAsString();
+									String url1 = dataObject.getAsJsonPrimitive("url").getAsString();
 
-									message.getChannel().sendMessage(ImgurUploader.upload(url));
+									message.getChannel().sendMessage(ImgurUploader.upload(url1));
 									Statistics.INSTANCE.addToStat("successful_meme_generations");
 
 								}
