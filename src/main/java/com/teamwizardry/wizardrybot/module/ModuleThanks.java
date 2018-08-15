@@ -22,7 +22,7 @@ public class ModuleThanks extends Module implements ICommandModule {
 
 	@Override
 	public String getName() {
-		return "Thank Albus";
+		return "Thanks";
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class ModuleThanks extends Module implements ICommandModule {
 
 	@Override
 	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
-		if (!result.getParameters().containsKey("albus")) return false;
+		if (!result.getParameters().containsKey("albus")) return true;
 		if (!result.getParameters().containsKey("thanks")) return false;
 
 		String reply = result.getFulfillment().getSpeech();

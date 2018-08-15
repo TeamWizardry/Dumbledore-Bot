@@ -2,9 +2,6 @@ package com.teamwizardry.wizardrybot;
 
 
 import ai.api.model.Result;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.module.ModuleAboutCommand;
 import net.lingala.zip4j.core.ZipFile;
@@ -19,7 +16,6 @@ import org.reflections.Reflections;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -44,8 +40,16 @@ public class WizardryBot {
 	@Nullable
 	public static File ffProbe = null;
 
+	public static boolean DEV = false;
+
 	public static void main(String[] args) {
 		wizardryBot = new WizardryBot();
+
+		URL clazzURL = WizardryBot.class.getResource("WizardryBot.class");
+		if (clazzURL != null && !clazzURL.getPath().startsWith("jar")) {
+			DEV = true;
+			System.out.println("Running in an IDE. Dev mode activated.");
+		}
 
 		if (args.length <= 0 || args[0].isEmpty()) {
 			System.out.println("No key provided.");
@@ -169,7 +173,7 @@ public class WizardryBot {
 			System.out.println("<<------------------------------------------------------------------------>>");
 		}
 
-		Thread apiUpdateThread = new Thread(() -> {
+		Thread aestheticsThread = new Thread(() -> {
 			URL url = wizardryBot.getClass().getClassLoader().getResource("profiles/dumbledore_" + (new Random().nextInt(7) + 1) + ".jpg");
 			if (url != null) {
 				try {
@@ -179,16 +183,11 @@ public class WizardryBot {
 					e.printStackTrace();
 				}
 			}
-
-
-			//} catch (InterruptedException | ExecutionException | IOException e) {
-			//	e.printStackTrace();
-			//}
 		});
-		apiUpdateThread.setDaemon(true);
-		apiUpdateThread.start();
+		aestheticsThread.setDaemon(true);
+		aestheticsThread.start();
 
-		// Modules and Commands init
+		// --- Modules and Commands init --- //
 		{
 			Reflections reflections = new Reflections("com.teamwizardry.wizardrybot.module");
 			Set<Class<? extends Module>> classes = reflections.getSubTypesOf(Module.class);
@@ -210,42 +209,34 @@ public class WizardryBot {
 
 		api.addMessageCreateListener(messageCreateEvent -> {
 
-			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
-
-			processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
-		});
-
-		File file = new File("amRestarting.json");
-		if (file.exists()) {
-			try {
-				JsonElement element = new JsonParser().parse(new FileReader(file));
-				if (element.isJsonObject()) {
-					JsonObject object = element.getAsJsonObject();
-					if (object.has("channel") && object.get("channel").isJsonPrimitive()) {
-						String channelID = object.getAsJsonPrimitive("channel").getAsString();
-						api.getTextChannelById(channelID).ifPresent(textChannel -> textChannel.sendMessage("Successfully restarted!"));
-					}
+			AtomicBoolean carryOn = new AtomicBoolean(true);
+			messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
+				if (user.isBot()) {
+					carryOn.set(false);
+					return;
 				}
-			} catch (IOException ignored) {
+				if (user.isYourself()) {
+					carryOn.set(false);
+				}
+			});
+
+			if (!carryOn.get()) return;
+
+			if (DEV && messageCreateEvent.getChannel().getId() == 407963020631736323L) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				messageCreateEvent.getMessage().getChannel().sendMessage("DEV:");
 			}
-			file.delete();
-		}
+
+			if (!DEV || messageCreateEvent.getChannel().getId() == 407963020631736323L)
+				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
+		});
 	}
 
 	private static void processMessage(Message message, DiscordApi api) {
-		AtomicBoolean carryOn = new AtomicBoolean(true);
-		message.getUserAuthor().ifPresent(user -> {
-			if (user.isBot()) {
-				carryOn.set(false);
-				return;
-			}
-			if (user.isYourself()) {
-				carryOn.set(false);
-			}
-		});
-
-		if (!carryOn.get()) return;
-
 		Command command = new Command(message, commands);
 
 		if (command.getResult() == null) return;
