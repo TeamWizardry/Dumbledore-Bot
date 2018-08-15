@@ -39,17 +39,8 @@ public class WizardryBot {
 	@Nullable
 	public static File ffProbe = null;
 
-	public static boolean DEV = false;
-
 	public static void main(String[] args) {
 		wizardryBot = new WizardryBot();
-
-		//URL clazzURL = WizardryBot.class.getResource("WizardryBot.class");
-		//if (clazzURL != null && !clazzURL.getPath().startsWith("jar")) {
-		//	DEV = true;
-		//	System.out.println("Running in an IDE. Dev mode activated.");
-		//}
-
 		if (args.length <= 0 || args[0].isEmpty()) {
 			System.out.println("No key provided.");
 			return;
@@ -212,16 +203,7 @@ public class WizardryBot {
 
 			if (!carryOn.get()) return;
 
-			//if (DEV && messageCreateEvent.getChannel().getId() == 407963020631736323L) {
-			//	try {
-			//		Thread.sleep(100);
-			//	} catch (InterruptedException e) {
-			//		e.printStackTrace();
-			//	}
-			//	messageCreateEvent.getMessage().getChannel().sendMessage("DEV:");
-			//}
-
-			//if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
+			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
 				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
 	}
@@ -229,7 +211,6 @@ public class WizardryBot {
 	private static void processMessage(Message message, DiscordApi api) {
 		Command command = new Command(message, commands);
 
-		if (command.getResult() == null) return;
 		Result result = command.getResult();
 		Statistics.INSTANCE.addToStat("messages_analyzed");
 

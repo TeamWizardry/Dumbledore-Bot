@@ -15,6 +15,7 @@ import org.javacord.api.entity.message.MessageAttachment;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,27 +71,10 @@ public class ModuleConvertText extends Module {
 						sb.append(line).append("\n");
 					}
 
-					String txt = sb.toString();
+					String text = sb.toString();
+					if (text.isEmpty()) continue;
 
-					if (txt.contains("Time: ") && txt.contains("at net.minecraft")) {
-						message.getChannel().sendMessage("SUMMARY:");
-						message.getChannel().sendMessage("```" + StringUtils.substringBetween(txt, "Time: ", "at net.minecraft") + "```");
-					} else if (txt.length() > 1500) {
-						List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(txt));
-						while (splits.size() > 5) {
-							splits.remove(0);
-						}
-						for (String string : splits)
-							message.getChannel().sendMessage("```" + string + "```");
-					} else {
-						message.getChannel().sendMessage("```" + txt + "```");
-					}
-
-					if (txt.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
-						message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLib***");
-						message.getChannel().sendMessage("***LibrarianLib Download Link: https://minecraft.curseforge.com/projects/librarianlib***");
-					}
-					Statistics.INSTANCE.addToStat("text_files_summarized");
+					processText(message, text);
 
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -105,25 +89,59 @@ public class ModuleConvertText extends Module {
 			String text = TextLinkExtractor.getText(url);
 			if (text == null || text.isEmpty()) continue;
 
-			if (text.contains("Time: ") && text.contains("at net.minecraft")) {
-				message.getChannel().sendMessage("SUMMARY:");
-				message.getChannel().sendMessage("```" + StringUtils.substringBetween(text, "Time: ", "at net.minecraft") + "```");
-			} else if (text.length() > 1500) {
-				List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(text));
-				while (splits.size() > 5) {
-					splits.remove(0);
-				}
-				for (String string : splits)
-					message.getChannel().sendMessage("```" + string + "```");
-			} else {
-				message.getChannel().sendMessage("```" + text + "```");
-			}
+			processText(message, text);
+		}
+	}
 
-			if (text.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
-				message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLib***");
-				message.getChannel().sendMessage("***LibrarianLib Download Link: https://minecraft.curseforge.com/projects/librarianlib***");
+	private void processText(Message message, String text) {
+		if (text.contains("Time: ") && text.contains("at net.minecraft")) {
+			message.getChannel().sendMessage("SUMMARY:");
+			message.getChannel().sendMessage("```" + StringUtils.substringBetween(text, "Time: ", "at net.minecraft") + "```");
+		} else if (text.length() > 1500) {
+			List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(text));
+			while (splits.size() > 5) {
+				splits.remove(0);
 			}
-			Statistics.INSTANCE.addToStat("text_files_summarized");
+			for (String string : splits)
+				message.getChannel().sendMessage("```" + string + "```");
+		} else {
+			message.getChannel().sendMessage("```" + text + "```");
+		}
+
+		Statistics.INSTANCE.addToStat("text_files_summarized");
+
+		if (text.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
+			message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLIB***");
+			message.getChannel().sendMessage("***LibrarianLib Download Link: https://minecraft.curseforge.com/projects/librarianlib***");
+			Statistics.INSTANCE.addToStat("liblib_update_solutions_given");
+		}
+
+		if (text.contains("---- Minecraft Crash Report ----")) {
+			String versionTable = StringUtils.substringBetween(text,
+					"-- System Details --",
+					"Loaded coremods");
+
+			new BufferedReader(new StringReader(versionTable)).lines().forEach(line -> {
+				String keyword;
+				if (line.contains("wizardry") && !line.contains("Electroblob")) {
+					keyword = "wizardry";
+				} else if (line.contains("librarianlib")) {
+					keyword = "librarianlib";
+				} else return;
+
+				line = line.replace(" ", "");
+				line = StringUtils.substringBetween(line, keyword + "|", "|None");
+
+				if (line.contains("|")) {
+					String[] sections = line.split("\\|");
+
+					if (sections.length >= 2) {
+						String builder = StringUtils.capitalize(keyword) + " Version: `" + sections[0] + "`\n" +
+								StringUtils.capitalize(keyword) + " Jar Name: `" + sections[1] + "`\n";
+						message.getChannel().sendMessage(builder);
+					}
+				}
+			});
 		}
 	}
 }

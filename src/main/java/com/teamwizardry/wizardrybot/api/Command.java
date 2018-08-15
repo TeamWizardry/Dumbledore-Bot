@@ -21,8 +21,6 @@ public class Command {
 	public Command(@NotNull Message message, HashSet<String> commands) {
 		String content = Utils.processMentions(message);
 
-		result = AI.INSTANCE.think(content.contains(",") ? content.split(",")[1].trim() : content);
-
 		String safeContent = content.toLowerCase().trim();
 		if (safeContent.startsWith("hey albus")
 				|| safeContent.startsWith("hey abluis")
@@ -41,6 +39,12 @@ public class Command {
 		}
 
 		isPotentiallyACommand = afterHey != null && !afterHey.isEmpty();
+
+		if (isPotentiallyACommand) {
+			result = AI.INSTANCE.think(afterHey);
+		} else {
+			result = AI.INSTANCE.think(content.contains(",") ? content.split(",")[1].trim() : content);
+		}
 
 		// Now process the command used
 		if (hasSaidHey && isPotentiallyACommand) {
