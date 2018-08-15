@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -45,11 +44,11 @@ public class WizardryBot {
 	public static void main(String[] args) {
 		wizardryBot = new WizardryBot();
 
-		URL clazzURL = WizardryBot.class.getResource("WizardryBot.class");
-		if (clazzURL != null && !clazzURL.getPath().startsWith("jar")) {
-			DEV = true;
-			System.out.println("Running in an IDE. Dev mode activated.");
-		}
+		//URL clazzURL = WizardryBot.class.getResource("WizardryBot.class");
+		//if (clazzURL != null && !clazzURL.getPath().startsWith("jar")) {
+		//	DEV = true;
+		//	System.out.println("Running in an IDE. Dev mode activated.");
+		//}
 
 		if (args.length <= 0 || args[0].isEmpty()) {
 			System.out.println("No key provided.");
@@ -73,6 +72,11 @@ public class WizardryBot {
 	}
 
 	private static void init(DiscordApi api, WizardryBot wizardryBot) {
+
+		BufferedImage profile = Utils.downloadURLAsImage(null, Constants.albusProfileLinks[RandUtil.nextInt(Constants.albusProfileLinks.length - 1)]);
+		if (profile != null) {
+			api.updateAvatar(profile);
+		}
 
 		// INSTALLERS
 		{
@@ -173,20 +177,6 @@ public class WizardryBot {
 			System.out.println("<<------------------------------------------------------------------------>>");
 		}
 
-		Thread aestheticsThread = new Thread(() -> {
-			URL url = wizardryBot.getClass().getClassLoader().getResource("profiles/dumbledore_" + (new Random().nextInt(7) + 1) + ".jpg");
-			if (url != null) {
-				try {
-					BufferedImage img = ImageIO.read(url);
-					api.updateAvatar(img);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-		aestheticsThread.setDaemon(true);
-		aestheticsThread.start();
-
 		// --- Modules and Commands init --- //
 		{
 			Reflections reflections = new Reflections("com.teamwizardry.wizardrybot.module");
@@ -222,16 +212,16 @@ public class WizardryBot {
 
 			if (!carryOn.get()) return;
 
-			if (DEV && messageCreateEvent.getChannel().getId() == 407963020631736323L) {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				messageCreateEvent.getMessage().getChannel().sendMessage("DEV:");
-			}
+			//if (DEV && messageCreateEvent.getChannel().getId() == 407963020631736323L) {
+			//	try {
+			//		Thread.sleep(100);
+			//	} catch (InterruptedException e) {
+			//		e.printStackTrace();
+			//	}
+			//	messageCreateEvent.getMessage().getChannel().sendMessage("DEV:");
+			//}
 
-			if (!DEV || messageCreateEvent.getChannel().getId() == 407963020631736323L)
+			//if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
 				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
 		});
 	}
