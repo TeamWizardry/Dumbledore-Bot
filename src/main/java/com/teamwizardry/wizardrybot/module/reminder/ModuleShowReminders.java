@@ -56,7 +56,7 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		File file = new File("remind_me.json");
 		if (!file.exists()) {
 			message.getChannel().sendMessage("You don't have any reminders you silly goof.");

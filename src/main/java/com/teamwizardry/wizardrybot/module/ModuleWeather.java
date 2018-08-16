@@ -47,7 +47,7 @@ public class ModuleWeather extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (result.getParameters().containsKey("geo-city")) {
 
 			String place = result.getStringParameter("geo-city");

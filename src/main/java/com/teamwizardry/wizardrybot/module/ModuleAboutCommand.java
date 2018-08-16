@@ -62,7 +62,7 @@ public class ModuleAboutCommand extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		Module askingAbout = null;
 		String cmdName = result.getStringParameter("any").toLowerCase().trim();
 

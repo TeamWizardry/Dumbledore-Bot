@@ -49,7 +49,7 @@ public class ModuleInsult extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (!result.getParameters().containsKey("curse")) return true;
 
 		String insult = result.getStringParameter("curse").toLowerCase().trim();

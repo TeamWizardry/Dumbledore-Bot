@@ -57,7 +57,7 @@ public class ModuleAutoComplete extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		try {
 			String path = command.getArguments().trim().replace(" ", "%20");
 			FileUtils.copyURLToFile(

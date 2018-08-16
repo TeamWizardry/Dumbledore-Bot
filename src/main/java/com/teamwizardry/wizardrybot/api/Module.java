@@ -30,7 +30,7 @@ public abstract class Module {
 
 	public abstract String getExample();
 
-	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
+	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 
 	}
 }

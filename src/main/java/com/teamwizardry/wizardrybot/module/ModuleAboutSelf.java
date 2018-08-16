@@ -45,18 +45,20 @@ public class ModuleAboutSelf extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
-		EmbedBuilder embed = new EmbedBuilder().setTitle("About Me").setColor(Color.GREEN)
-				.setDescription("I am Professor Albus Dumbledore, the wisest robotic wizard in all of the discords!\n"
-						+ "My brain is powered by the artificially intelligent systems of Dialogflow, Google, as well as Microsoft/Bing.\n"
-						+ "I was made with " + EmojiManager.getForAlias("heart").getUnicode() + " by my creator, Demoniaque.\n"
-						+ "My owner made me not store any username IDs or user related information in plain text! Any username IDs stored have been hashed and salted securely and are not stored as is.\n"
-						+ "Ask me 'hey albus, what can you do?' so I can tell you about all my abilities, young wizard!\n"
-						+ "Some things I can do: I can analyze images and tell you what's or who's in them, I can define words, I can look something up on wikipedia, I can remind you of something, I can even draw functions for you, and so much more!\n"
-						+ "Take a look at my brain here: [Github Link](https://github.com/TeamWizardry/Dumbledore-Bot)\n"
-						+ "You can invite me with this link to your server: [Invite Link](https://discordapp.com/oauth2/authorize?client_id=348507550058283019&scope=bot&permissions=2080767089)\n"
-						+ "And contact my maker here: [Team Wizardry Discord Invite](https://discord.gg/wsk2PBR)");
-		message.getChannel().sendMessage("", embed);
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
+		String txt = "I am Professor Albus Dumbledore, the wisest robotic wizard in all of the discords!\n"
+				+ "My brain is powered by the artificially intelligent systems of Dialogflow and Google.\n"
+				+ "I was made with " + EmojiManager.getForAlias("heart").getUnicode() + " by my creator, Demoniaque.\n"
+				+ "Ask me 'hey albus, what can you do?' so I can tell you about all my abilities, young wizard!\n"
+				+ "Some things I can do: I can analyze images and tell you what's or who's in them, I can define words, I can look something up on wikipedia, I can remind you of something, I can even draw functions for you, and so much more!\n";
+		if (!whatsapp) {
+			txt += "Take a look at my brain here: [Github Link](https://github.com/TeamWizardry/Dumbledore-Bot)\n"
+					+ "You can invite me with this link to your server: [Invite Link](https://discordapp.com/oauth2/authorize?client_id=348507550058283019&scope=bot&permissions=2080767089)\n"
+					+ "And contact my maker here: [Team Wizardry Discord Invite](https://discord.gg/wsk2PBR)";
+		}
+
+		EmbedBuilder embed = new EmbedBuilder().setTitle("About Me").setColor(Color.GREEN).setDescription(txt);
+		message.getChannel().sendMessage(embed);
 		Statistics.INSTANCE.addToStat("times_asked_about_self");
 
 		return true;

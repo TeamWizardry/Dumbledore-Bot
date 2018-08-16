@@ -35,7 +35,7 @@ public class ModuleSanityCheck extends Module {
 	}
 
 	@Override
-	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
+	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 		if (!command.hasSaidHey()) return;
 		if (command.isPotentiallyACommand()) return;
 

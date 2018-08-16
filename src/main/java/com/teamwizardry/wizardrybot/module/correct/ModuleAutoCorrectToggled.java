@@ -64,7 +64,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (!command.hasSaidHey()) return true;
 
 		File file = new File("autocorrect.json");
@@ -124,7 +124,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 	}
 
 	@Override
-	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
+	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 		if (command.hasSaidHey()) return;
 
 		File file = new File("autocorrect.json");

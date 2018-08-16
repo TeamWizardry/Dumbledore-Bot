@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class Command {
 
-	private final Result result;
+	private Result result = null;
 	private String command = null;
 	private boolean isPotentiallyACommand;
 	private boolean hasSaidHey = false;
@@ -43,7 +43,9 @@ public class Command {
 		if (isPotentiallyACommand) {
 			result = AI.INSTANCE.think(afterHey);
 		} else {
-			result = AI.INSTANCE.think(content.contains(",") ? content.split(",")[1].trim() : content);
+			String toThink = content.contains(",") ? content.split(",")[1].trim() : content;
+			if (!toThink.isEmpty())
+				result = AI.INSTANCE.think(toThink);
 		}
 
 		// Now process the command used

@@ -46,7 +46,7 @@ public class ModuleThanks extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (!result.getParameters().containsKey("albus")) return true;
 		if (!result.getParameters().containsKey("thanks")) return false;
 

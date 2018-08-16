@@ -6,6 +6,7 @@ import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.module.ModuleAboutCommand;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.message.Message;
@@ -22,7 +23,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class WizardryBot {
 
@@ -39,7 +40,10 @@ public class WizardryBot {
 	@Nullable
 	public static File ffProbe = null;
 
+	private static boolean DEV = true;
+
 	public static void main(String[] args) {
+
 		wizardryBot = new WizardryBot();
 		if (args.length <= 0 || args[0].isEmpty()) {
 			System.out.println("No key provided.");
@@ -54,7 +58,7 @@ public class WizardryBot {
 
 		new DiscordApiBuilder().setToken(KEY).login().thenAccept(api -> {
 			System.out.println(api.createBotInvite());
-			init(api, wizardryBot);
+			init(api);
 			System.out.println("YOU SHALL NOT PASS!");
 		}).exceptionally(throwable -> {
 			throwable.printStackTrace();
@@ -62,7 +66,11 @@ public class WizardryBot {
 		});
 	}
 
-	private static void init(DiscordApi api, WizardryBot wizardryBot) {
+	private static void init(DiscordApi api) {
+
+		api.getChannelById(479341551668166657L).ifPresent(serverChannel -> {
+			new TwilioWebListener(api, serverChannel);
+		});
 
 		BufferedImage profile = Utils.downloadURLAsImage(null, Constants.albusProfileLinks[RandUtil.nextInt(Constants.albusProfileLinks.length - 1)]);
 		if (profile != null) {
@@ -189,26 +197,31 @@ public class WizardryBot {
 		}
 
 		api.addMessageCreateListener(messageCreateEvent -> {
+			if (messageCreateEvent.getChannel().getId() == 479341551668166657L) {
 
-			AtomicBoolean carryOn = new AtomicBoolean(true);
-			messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
-				if (user.isBot()) {
-					carryOn.set(false);
-					return;
+				Message message = messageCreateEvent.getMessage();
+				if (messageCreateEvent.getMessage().getContent().startsWith("<WHATSAPP=")) {
+					processMessage(message, messageCreateEvent.getApi(), true);
+				} else {
+					for (Message history : messageCreateEvent.getChannel().getMessagesAsStream().limit(20).collect(Collectors.toList())) {
+						if (history.getContent().startsWith("<WHATSAPP=")) {
+							String number = StringUtils.substringBetween(history.getContent(), "<WHATSAPP=", ">");
+
+							TwilioWebListener.sendMessage(number, message);
+							return;
+						}
+					}
 				}
-				if (user.isYourself()) {
-					carryOn.set(false);
-				}
-			});
+			} else if (!DEV || messageCreateEvent.getChannel().getId() == 407963020631736323L)
+				messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
 
-			if (!carryOn.get()) return;
-
-			//	if (messageCreateEvent.getChannel().getId() == 407963020631736323L)
-				processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi());
+					if (user.isBot() || user.isYourself()) return;
+					processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi(), false);
+				});
 		});
 	}
 
-	private static void processMessage(Message message, DiscordApi api) {
+	public static void processMessage(Message message, DiscordApi api, boolean whatsapp) {
 		Command command = new Command(message, commands);
 
 		Result result = command.getResult();
@@ -219,7 +232,7 @@ public class WizardryBot {
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
 			if (shouldRespond || module.overrideResponseCheck()) {
-				module.onMessage(api, message, result, command);
+				module.onMessage(api, message, result, command, whatsapp);
 
 				if (module instanceof ICommandModule) {
 
@@ -252,7 +265,7 @@ public class WizardryBot {
 
 				Thread thread = new Thread(() -> {
 
-					if (!cmdModule.onCommand(api, message, command, result)) {
+					if (!cmdModule.onCommand(api, message, command, result, whatsapp)) {
 						message.getChannel().sendMessage("That's not how you use that command.");
 						ModuleAboutCommand.sendCommandMessage(message, finalHighestPriority);
 					}

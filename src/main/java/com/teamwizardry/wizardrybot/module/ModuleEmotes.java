@@ -43,7 +43,7 @@ public class ModuleEmotes extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (command.getCommand() == null || command.getCommand().isEmpty()) return true;
 		if (command.getCommand().toLowerCase().equals(getName().toLowerCase())) return false;
 

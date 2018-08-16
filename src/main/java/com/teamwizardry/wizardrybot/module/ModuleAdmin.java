@@ -51,7 +51,7 @@ public class ModuleAdmin extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if ((String.valueOf(message.getAuthor().getId())).equals("136826665069314048")) {
 
 			String[] args = command.getArguments().split(" ");

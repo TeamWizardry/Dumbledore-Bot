@@ -44,7 +44,7 @@ public class ModuleCommands extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		StringBuilder commands = new StringBuilder();
 		for (Module module : WizardryBot.modules) {
 			if (module.isListed())

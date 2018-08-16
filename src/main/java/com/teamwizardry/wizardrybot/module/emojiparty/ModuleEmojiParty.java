@@ -53,7 +53,7 @@ public class ModuleEmojiParty extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		EmojiGames emojiGames;
 		if (command.getArguments().contains("movie")) emojiGames = EmojiGames.MOVIE;
 		else if (command.getArguments().contains("show")) emojiGames = EmojiGames.SHOW;

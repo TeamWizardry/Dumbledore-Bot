@@ -96,7 +96,7 @@ public class ModulePlay extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (command.hasSaidHey() || message.getContent().toLowerCase().contains("alexa")) {
 
 			String songName = result.getStringParameter("any");

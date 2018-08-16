@@ -55,7 +55,7 @@ public class ModuleConvertText extends Module {
 	}
 
 	@Override
-	public void onMessage(DiscordApi api, Message message, Result result, Command command) {
+	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 		for (MessageAttachment attachment : message.getAttachments()) {
 			if (attachment.isImage()) continue;
 			if (attachment.getFileName().contains("txt") || attachment.getFileName().contains("log")) {

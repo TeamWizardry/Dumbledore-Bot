@@ -95,7 +95,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		String[] args = command.getArguments().split(" ");
 
 		if (args.length <= 0) {

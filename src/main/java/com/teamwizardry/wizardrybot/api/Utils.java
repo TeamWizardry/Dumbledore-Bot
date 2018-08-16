@@ -5,7 +5,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
-import kotlin.Pair;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.util.text.BasicTextEncryptor;
@@ -139,6 +138,11 @@ public class Utils {
 				.replace("@here", "@\u200Bhere")
 				.trim();
 
+		if (string.startsWith("<WHATSAPP=")) {
+			String handle = StringUtils.substringBetween(string, "<WHATSAPP=", ">");
+			string = string.substring("<WHATSAPP=".length() + handle.length() + ">".length());
+		}
+
 		for (User id : message.getMentionedUsers()) {
 			string = string.replace("<@" + id.getId() + ">", "@\u200B" + id.getName());
 		}
@@ -155,6 +159,11 @@ public class Utils {
 				.replace("@everyone", "@\u200Beveryone")
 				.replace("@here", "@\u200Bhere")
 				.trim();
+
+		if (string.startsWith("<WHATSAPP=")) {
+			String handle = StringUtils.substringBetween(string, "<WHATSAPP=", ">");
+			string = string.substring("<WHATSAPP=".length() + handle.length() + ">".length());
+		}
 
 		try {
 			String[] mentions = StringUtils.substringsBetween(string, "<@", ">");
@@ -214,13 +223,13 @@ public class Utils {
 	}
 
 	public static boolean checkHashMatch(String plainText, JsonObject object) {
-		Pair<byte[], byte[]> hashSalt = getHashSalt(object);
+		BytePair hashSalt = getHashSalt(object);
 		if (hashSalt == null) return false;
 		return checkHashMatch(plainText, hashSalt);
 	}
 
-	public static boolean checkHashMatch(String plainText, Pair<byte[], byte[]> pair) {
-		return checkHashMatch(plainText, pair.getFirst(), pair.getSecond());
+	public static boolean checkHashMatch(String plainText, BytePair pair) {
+		return checkHashMatch(plainText, pair.getKey(), pair.getValue());
 	}
 
 	public static boolean checkHashMatch(String plainText, String hash, String salt) {
@@ -232,13 +241,13 @@ public class Utils {
 	}
 
 	@Nullable
-	public static Pair<byte[], byte[]> getHashSalt(JsonObject object) {
+	public static BytePair getHashSalt(JsonObject object) {
 		if (!object.has("salt") || !object.has("hash")) return null;
 
 		byte[] salt = Base64.decodeBase64(object.getAsJsonPrimitive("salt").getAsString());
 		byte[] hash = Base64.decodeBase64(object.getAsJsonPrimitive("hash").getAsString());
 
-		return new Pair<>(hash, salt);
+		return new BytePair(hash, salt);
 	}
 
 	public static JsonObject encryptString(User user) {

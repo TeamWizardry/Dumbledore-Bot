@@ -46,7 +46,7 @@ public class ModuleGif extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (command.getArguments().isEmpty()) return false;
 
 		try {

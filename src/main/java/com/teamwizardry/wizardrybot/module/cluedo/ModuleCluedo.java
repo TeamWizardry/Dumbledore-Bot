@@ -49,7 +49,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		String[] args = command.getArguments().toLowerCase().split(" ");
 
 		if (args.length == 0 || args[0].isEmpty()) {

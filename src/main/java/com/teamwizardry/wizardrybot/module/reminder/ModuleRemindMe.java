@@ -57,7 +57,7 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (message.getContent().length() > 256) {
 			message.getChannel().sendMessage("Your message is too long... Please condense it so the entire thing is less than 256 characters. Sorry... :(");
 			return true;

@@ -85,7 +85,7 @@ public class ModuleSubjectiveQuestion extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		String any = result.getStringParameter("any");
 
 		String opinion = result.getStringParameter("tell-me");

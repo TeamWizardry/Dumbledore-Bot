@@ -49,7 +49,7 @@ public class ModuleMath extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		String tEquation = command.getArguments().toLowerCase();
 		if (tEquation.isEmpty()) {
 			return false;

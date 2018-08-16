@@ -48,7 +48,7 @@ public class ModuleWizardry extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 
 		final boolean[] helped = {false};
 		message.getChannel().getMessagesAsStream().limit(10).filter(message12 -> {

@@ -58,7 +58,7 @@ public class ModuleTime extends Module implements ICommandModule {
 	}
 
 	@Override
-	public boolean onCommand(DiscordApi api, Message message, Command command, Result result) {
+	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		String[] args = command.getArguments().replaceAll(" +", " ").split(" ");
 
 		if (args[0].equalsIgnoreCase("register") || args[0].equalsIgnoreCase("add")) {
