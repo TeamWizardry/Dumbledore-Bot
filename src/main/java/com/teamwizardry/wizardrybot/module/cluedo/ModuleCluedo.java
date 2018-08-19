@@ -50,10 +50,22 @@ public class ModuleCluedo extends Module implements ICommandModule {
 
 	@Override
 	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
-		String[] args = command.getArguments().toLowerCase().split(" ");
+		return false;
+	}
+
+	@Override
+	public boolean overrideResponseCheck() {
+		return true;
+	}
+
+	@Override
+	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
+		if (!message.getContent().startsWith("!cluedo")) return;
+
+		String[] args = StringUtils.substringAfter(message.getContent(), "!cluedo ").toLowerCase().split(" ");
 
 		if (args.length == 0 || args[0].isEmpty()) {
-			return false;
+			return;
 		}
 
 		boolean isAdmin = isAdmin(message.getServer().get(), message.getUserAuthor().get());
@@ -61,7 +73,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 		if (args[0].equals("create")) {
 			if (!isAdmin) {
 				message.getChannel().sendMessage(PREFIX + "Only admins can use this command.");
-				return true;
+				return;
 			}
 
 			if (GAME_INSTANCE != null) {
@@ -74,18 +86,18 @@ public class ModuleCluedo extends Module implements ICommandModule {
 		if (args[0].equals("start")) {
 			if (!isAdmin) {
 				message.getChannel().sendMessage(PREFIX + "Only admins can use this command.");
-				return true;
+				return;
 			}
 
-			if (GAME_INSTANCE.getPlayers().size() < 3) {
+			if (GAME_INSTANCE.getPlayers().size() < 2) {
 				message.getChannel().sendMessage(PREFIX + "Not enough players! " + (3 - GAME_INSTANCE.getPlayers().size()) + " more players required.");
-				return true;
+				return;
 			}
 
 			if (GAME_INSTANCE == null) {
 				message.getChannel().sendMessage(PREFIX + "No game of cluedo is currently running.");
 				message.getChannel().sendMessage(PREFIX + "Type /cluedo create to make a new game.");
-				return true;
+				return;
 			}
 
 			GAME_INSTANCE.start();
@@ -99,9 +111,11 @@ public class ModuleCluedo extends Module implements ICommandModule {
 			for (User user : GAME_INSTANCE.getPlayers().keySet()) {
 				StringBuilder cardList = new StringBuilder();
 				for (String string : GAME_INSTANCE.getPlayerHand(user)) {
-					cardList.append(":black_large_square: ").append(StringUtils.capitalize(string)).append("\n");
+					cardList.append(":black_large_square: ").append(StringUtils.capitalize(string)).append("  ");
 				}
 				user.sendMessage("Your cards are:\n" + cardList.toString());
+
+				user.sendMessage(GAME_INSTANCE.board.file);
 			}
 
 			message.getChannel().sendMessage(PREFIX + tags + " Everyone check your private messages! I have sent you your cards!");
@@ -112,12 +126,12 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				message.getChannel().sendMessage(PREFIX + "No game of cluedo is currently running.");
 				if (isAdmin)
 					message.getChannel().sendMessage(PREFIX + "Type /cluedo create to make a new game.");
-				return true;
+				return;
 			}
 
 			if (GAME_INSTANCE.getPlayers().size() >= 6) {
 				message.getChannel().sendMessage(PREFIX + "The game reached the maximum amount of players possible (6). You can't join the game.");
-				return true;
+				return;
 			}
 
 			User user = message.getUserAuthor().get();
@@ -128,15 +142,17 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				String character = GAME_INSTANCE.getUserCharacter(user);
 				if (character == null || character.isEmpty()) {
 					message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " Something went wrong. You can't join the game.");
-					return true;
+					return;
 				}
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " has joined the game!");
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " Welcome, " + StringUtils.capitalize(character));
+
+
 			} else {
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " You are already in the game.");
 			}
 		}
-		return true;
+		return;
 	}
 
 	private boolean isAdmin(Server server, User user) {

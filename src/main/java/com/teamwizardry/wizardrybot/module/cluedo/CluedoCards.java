@@ -1,5 +1,9 @@
 package com.teamwizardry.wizardrybot.module.cluedo;
 
+import com.teamwizardry.wizardrybot.api.math.Vec2d;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,6 +13,29 @@ public class CluedoCards {
 	private static final Set<String> WEAPONS = new HashSet<>();
 	private static final Set<String> ROOMS = new HashSet<>();
 	private static final Set<String> ALL = new HashSet<>();
+
+	private static String[][] boardGrid = new String[22][22];
+
+	private static Set<Vec2d> entrances = new HashSet<>();
+
+	public static void init() {
+		//BufferedImage boardImg = ImageIO.read(BOARD_SIMPLE);
+		//Color[][] pixels = loadPixelsFromImage(boardImg);
+
+		new Board();
+	}
+
+	private static Color[][] loadPixelsFromImage(BufferedImage image) {
+		Color[][] colors = new Color[image.getWidth()][image.getHeight()];
+
+		for (int x = 0; x < image.getWidth(); x++) {
+			for (int y = 0; y < image.getHeight(); y++) {
+				colors[x][y] = new Color(image.getRGB(x, y));
+			}
+		}
+
+		return colors;
+	}
 
 	static {
 		CHARACTERS.add(Character.COLONEL_MUSTARD);
@@ -57,6 +84,7 @@ public class CluedoCards {
 
 	public static final class Character {
 
+		public static final String MR_GREEN = "mr green";
 		public static final String MRS_PEACOCK = "mrs peacock";
 		public static final String MISS_SCARLET = "miss scarlet";
 		public static final String PROFESSOR_PLUM = "professor plum";

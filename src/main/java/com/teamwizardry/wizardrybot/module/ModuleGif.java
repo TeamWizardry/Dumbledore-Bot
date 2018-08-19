@@ -9,7 +9,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.api.Command;
+import com.teamwizardry.wizardrybot.api.ICommandModule;
+import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
+import com.teamwizardry.wizardrybot.api.math.RandUtil;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 

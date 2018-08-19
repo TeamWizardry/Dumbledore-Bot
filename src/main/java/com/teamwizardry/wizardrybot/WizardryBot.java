@@ -3,6 +3,7 @@ package com.teamwizardry.wizardrybot;
 
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.api.math.RandUtil;
 import com.teamwizardry.wizardrybot.module.ModuleAboutCommand;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -40,10 +41,12 @@ public class WizardryBot {
 	@Nullable
 	public static File ffProbe = null;
 
-	private static boolean DEV = true;
+	private static boolean DEV = false;
 
 	public static void main(String[] args) {
+		//	CluedoCards.init();
 
+		//	if (false) {
 		wizardryBot = new WizardryBot();
 		if (args.length <= 0 || args[0].isEmpty()) {
 			System.out.println("No key provided.");
@@ -64,12 +67,13 @@ public class WizardryBot {
 			throwable.printStackTrace();
 			return null;
 		});
+		//	}
 	}
 
 	private static void init(DiscordApi api) {
 
 		api.getChannelById(479341551668166657L).ifPresent(serverChannel -> {
-			new TwilioWebListener(api, serverChannel);
+			//	new TwilioWebListener(api, serverChannel);
 		});
 
 		BufferedImage profile = Utils.downloadURLAsImage(null, Constants.albusProfileLinks[RandUtil.nextInt(Constants.albusProfileLinks.length - 1)]);
@@ -172,6 +176,7 @@ public class WizardryBot {
 					}
 				}
 			}
+
 			System.out.println("Installation Complete");
 			System.out.println("<<------------------------------------------------------------------------>>");
 		}

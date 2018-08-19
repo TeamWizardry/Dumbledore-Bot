@@ -1,6 +1,6 @@
 package com.teamwizardry.wizardrybot.module.cluedo;
 
-import com.teamwizardry.wizardrybot.api.RandUtil;
+import com.teamwizardry.wizardrybot.api.math.RandUtil;
 import org.javacord.api.entity.user.User;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,11 +23,14 @@ public class GameCluedo {
 	private String CHARACTER;
 	private String ROOM;
 
+	public Board board;
+
 	public GameCluedo() {
 		characterSelectionCarosal = new ArrayList<>(CluedoCards.getCharacters());
 		deckCarosalCharacters = new ArrayList<>(CluedoCards.getCharacters());
 		deckCarosalWeapons = new ArrayList<>(CluedoCards.getWeapons());
 		deckCarosalRooms = new ArrayList<>(CluedoCards.getRooms());
+		board = new Board();
 	}
 
 	public void start() {
@@ -63,7 +66,6 @@ public class GameCluedo {
 				if (!deckCarosalAll.isEmpty()) {
 					Set<String> hand = playerHandCards.get(user);
 					hand.add(deckCarosalAll.remove(0));
-					playerHandCards.put(user, hand);
 				}
 			}
 		}

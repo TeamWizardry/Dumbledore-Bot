@@ -1,4 +1,4 @@
-package com.teamwizardry.wizardrybot.api;
+package com.teamwizardry.wizardrybot.api.math;
 
 import java.util.Random;
 

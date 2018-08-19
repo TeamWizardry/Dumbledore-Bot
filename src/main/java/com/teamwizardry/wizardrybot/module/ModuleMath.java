@@ -1,8 +1,12 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.teamwizardry.wizardrybot.api.*;
+import com.teamwizardry.wizardrybot.api.Command;
+import com.teamwizardry.wizardrybot.api.ICommandModule;
+import com.teamwizardry.wizardrybot.api.Module;
+import com.teamwizardry.wizardrybot.api.Statistics;
 import com.teamwizardry.wizardrybot.api.imgur.ImgurUploader;
+import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import org.javacord.api.DiscordApi;

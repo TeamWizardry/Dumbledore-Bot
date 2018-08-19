@@ -10,11 +10,11 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.api.imgur.ImgurUploader;
+import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
-import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -431,23 +431,23 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							Vec2d size = new Vec2d(pasteImg.getWidth(), pasteImg.getHeight());
 
 							if (params.containsKey("loc")) {
-								loc = getVecFromName(params.get("loc"), imgDims, size);
+								loc = Utils.getVecFromName(params.get("loc"), imgDims, size);
 							} else {
 								if (j == 0) {
 									if (boxes.length == 1) {
-										loc = getVecFromName("center", imgDims, size);
+										loc = Utils.getVecFromName("center", imgDims, size);
 									} else {
-										loc = getVecFromName("center left", imgDims, size);
+										loc = Utils.getVecFromName("center left", imgDims, size);
 									}
 								} else if (j == 1) {
 
 									if (boxes.length == 2) {
-										loc = getVecFromName("center right", imgDims, size);
+										loc = Utils.getVecFromName("center right", imgDims, size);
 									} else {
-										loc = getVecFromName("center", imgDims, size);
+										loc = Utils.getVecFromName("center", imgDims, size);
 									}
 								} else if (j == 2) {
-									loc = getVecFromName("center right", imgDims, size);
+									loc = Utils.getVecFromName("center right", imgDims, size);
 								} else if (x == -1 && y == -1) {
 									continue;
 								}
@@ -651,20 +651,20 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								Rectangle2D textBounds = graphics.getFontMetrics(fontObj).getStringBounds(line, graphics);
 
 								if (params.containsKey("loc")) {
-									loc = getVecFromName(params.get("loc"), imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+									loc = Utils.getVecFromName(params.get("loc"), imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 								} else {
 									if (j == 0) {
-										loc = getVecFromName("top", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+										loc = Utils.getVecFromName("top", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 
 									} else if (j == 1) {
 
 										if (boxes.length == 2) {
-											loc = getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+											loc = Utils.getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 										} else {
-											loc = getVecFromName("center", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+											loc = Utils.getVecFromName("center", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 										}
 									} else if (j == 2) {
-										loc = getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+										loc = Utils.getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 									} else if (x == -1 && y == -1) {
 										continue boxLoop1;
 									}
@@ -784,85 +784,4 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 		return true;
 	}
 
-	@Nullable
-	private Vec2d getVecFromName(String locName, Vec2d imgDims, Vec2d objDims) {
-		locName = locName.toLowerCase().replace("corner", "").replace(" ", "").trim();
-
-		switch (locName) {
-			case "middle":
-			case "center": {
-				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
-				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
-
-				return new Vec2d(x, y);
-			}
-			case "right":
-			case "rightcenter":
-			case "centerright": {
-				double x = imgDims.x - objDims.x;
-				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
-
-				return new Vec2d(x, y);
-			}
-			case "left":
-			case "leftcenter":
-			case "centerleft": {
-				double x = 0;
-				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
-
-				return new Vec2d(x, y);
-			}
-			case "up":
-			case "topcenter":
-			case "centertop":
-			case "top": {
-				double x = (imgDims.x / 2.0) + (objDims.x / 2.0);
-				double y = objDims.y;
-
-				return new Vec2d(x, y);
-			}
-			case "down":
-			case "bottomcenter":
-			case "centerbottom":
-			case "bottom": {
-				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
-				double y = imgDims.y - objDims.y;
-
-				return new Vec2d(x, y);
-			}
-			case "topleft":
-			case "upperleft": {
-				double x = 0;
-				double y = objDims.y;
-
-				return new Vec2d(x, y);
-			}
-
-			case "topright":
-			case "upperright": {
-				double x = imgDims.x - objDims.x;
-				double y = objDims.y;
-
-				return new Vec2d(x, y);
-			}
-
-			case "lowerleft":
-			case "bottomleft": {
-				double x = 0;
-				double y = imgDims.y - objDims.y;
-
-				return new Vec2d(x, y);
-			}
-
-			case "lowerright":
-			case "bottomright": {
-				double x = imgDims.x - objDims.x;
-				double y = imgDims.y - objDims.y;
-
-				return new Vec2d(x, y);
-			}
-		}
-
-		return null;
-	}
 }

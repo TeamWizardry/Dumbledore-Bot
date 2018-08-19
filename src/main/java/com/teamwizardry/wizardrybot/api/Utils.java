@@ -5,6 +5,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
+import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.jasypt.util.text.BasicTextEncryptor;
@@ -366,5 +367,87 @@ public class Utils {
 			requiredWidth = requiredHeight * sourceRatio;
 		}
 		return new Dimension((int) requiredWidth, (int) requiredHeight);
+	}
+
+	@Nullable
+	public static Vec2d getVecFromName(String locName, Vec2d imgDims, Vec2d objDims) {
+		locName = locName.toLowerCase().replace("corner", "").replace(" ", "").trim();
+
+		switch (locName) {
+			case "middle":
+			case "center": {
+				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
+
+				return new Vec2d(x, y);
+			}
+			case "right":
+			case "rightcenter":
+			case "centerright": {
+				double x = imgDims.x - objDims.x;
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
+
+				return new Vec2d(x, y);
+			}
+			case "left":
+			case "leftcenter":
+			case "centerleft": {
+				double x = 0;
+				double y = (imgDims.y / 2.0) + (objDims.y / 2.0);
+
+				return new Vec2d(x, y);
+			}
+			case "up":
+			case "topcenter":
+			case "centertop":
+			case "top": {
+				double x = (imgDims.x / 2.0) + (objDims.x / 2.0);
+				double y = objDims.y;
+
+				return new Vec2d(x, y);
+			}
+			case "down":
+			case "bottomcenter":
+			case "centerbottom":
+			case "bottom": {
+				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
+				double y = imgDims.y - objDims.y;
+
+				return new Vec2d(x, y);
+			}
+			case "topleft":
+			case "upperleft": {
+				double x = 0;
+				double y = objDims.y;
+
+				return new Vec2d(x, y);
+			}
+
+			case "topright":
+			case "upperright": {
+				double x = imgDims.x - objDims.x;
+				double y = objDims.y;
+
+				return new Vec2d(x, y);
+			}
+
+			case "lowerleft":
+			case "bottomleft": {
+				double x = 0;
+				double y = imgDims.y - objDims.y;
+
+				return new Vec2d(x, y);
+			}
+
+			case "lowerright":
+			case "bottomright": {
+				double x = imgDims.x - objDims.x;
+				double y = imgDims.y - objDims.y;
+
+				return new Vec2d(x, y);
+			}
+		}
+
+		return null;
 	}
 }

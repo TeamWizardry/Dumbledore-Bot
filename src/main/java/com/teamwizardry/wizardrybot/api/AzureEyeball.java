@@ -3,6 +3,7 @@ package com.teamwizardry.wizardrybot.api;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
