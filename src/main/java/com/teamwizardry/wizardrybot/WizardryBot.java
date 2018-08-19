@@ -53,6 +53,10 @@ public class WizardryBot {
 			return;
 		}
 
+		if (args.length > 1) {
+			if (args[1].equals("dev")) DEV = true;
+		}
+
 		String KEY = args[0];
 
 		System.out.println("Checking bot authorization...");
@@ -217,7 +221,7 @@ public class WizardryBot {
 						}
 					}
 				}
-			} else if (!DEV || messageCreateEvent.getChannel().getId() == 407963020631736323L)
+			} else if (!DEV || (messageCreateEvent.getChannel().getId() == 407963020631736323L && messageCreateEvent.getMessage().getContent().startsWith(".")))
 				messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
 
 					if (user.isBot() || user.isYourself()) return;

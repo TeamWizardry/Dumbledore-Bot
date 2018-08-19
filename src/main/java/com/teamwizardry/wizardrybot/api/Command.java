@@ -26,16 +26,19 @@ public class Command {
 				|| safeContent.startsWith("hey abluis")
 				|| safeContent.startsWith("hey ablus")
 				|| safeContent.startsWith("hey alby")
-				|| safeContent.startsWith("hey dumbledore")) {
+				|| safeContent.startsWith("hey dumbledore")
+				|| safeContent.startsWith(".hey albus")) {
 			hasSaidHey = true;
 			Statistics.INSTANCE.addToStat("hey_albuses");
 		}
 
-		if (content.contains(",")) {
-			afterHey = StringUtils.substringAfter(content, ",").trim();
-		} else if (StringUtils.countMatches(content, " ") > 1) {
-			// Two spaces over
-			afterHey = StringUtils.substringAfter(StringUtils.substringAfter(content, " ").trim(), " ").trim();
+		if (hasSaidHey) {
+			if (content.contains(",")) {
+				afterHey = StringUtils.substringAfter(content, ",").trim();
+			} else if (StringUtils.countMatches(content, " ") > 1) {
+				// Two spaces over
+				afterHey = StringUtils.substringAfter(StringUtils.substringAfter(content, " ").trim(), " ").trim();
+			}
 		}
 
 		isPotentiallyACommand = afterHey != null && !afterHey.isEmpty();

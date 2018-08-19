@@ -152,7 +152,6 @@ public class ModuleCluedo extends Module implements ICommandModule {
 				message.getChannel().sendMessage(PREFIX + user.getMentionTag() + " You are already in the game.");
 			}
 		}
-		return;
 	}
 
 	private boolean isAdmin(Server server, User user) {
