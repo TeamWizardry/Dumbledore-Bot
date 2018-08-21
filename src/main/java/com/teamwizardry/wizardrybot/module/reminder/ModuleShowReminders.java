@@ -84,8 +84,8 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 			for (JsonElement element : array) {
 				if (!element.isJsonObject()) continue;
 				JsonObject object1 = element.getAsJsonObject();
-				if (!object1.has("user") || !object1.get("user").isJsonObject()) continue;
-				User user = Utils.lookupUserFromHash(object1.getAsJsonObject("user"), api);
+				if (!object1.has("user") || !object1.get("user").isJsonPrimitive()) continue;
+				User user = Utils.getUser(object1.getAsJsonPrimitive("user").getAsLong(), api);
 				if (user == null) continue;
 				objects.add(object1);
 			}
@@ -116,7 +116,7 @@ public class ModuleShowReminders extends Module implements ICommandModule {
 						} else or = TimeUnit.MILLISECONDS.toSeconds(difference) + " seconds";
 
 						reminders.append("- ")
-								.append(Utils.decrypt(object1.getAsJsonPrimitive("reminder").getAsString()))
+								.append(object1.getAsJsonPrimitive("reminder").getAsString())
 								.append(" - ").append(or).append("\n");
 					}
 					array.remove(object1);

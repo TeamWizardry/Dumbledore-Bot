@@ -112,7 +112,10 @@ public class ModulePlay extends Module implements ICommandModule {
 						.asJson();
 
 				JsonElement element = new JsonParser().parse(response.getBody().toString());
-				if (!element.isJsonObject()) return true;
+				if (!element.isJsonObject()) {
+					message.getChannel().sendMessage("No video found.");
+					return true;
+				}
 				JsonObject object = element.getAsJsonObject();
 
 				System.out.println(object.toString());
@@ -143,7 +146,9 @@ public class ModulePlay extends Module implements ICommandModule {
 				}
 
 			} catch (UnirestException | UnsupportedEncodingException e) {
+				message.getChannel().sendMessage("No video found.");
 				e.printStackTrace();
+				return true;
 			}
 
 			if (videoId == null || title == null) {

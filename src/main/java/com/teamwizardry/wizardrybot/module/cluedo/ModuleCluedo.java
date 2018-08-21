@@ -132,6 +132,7 @@ public class ModuleCluedo extends Module implements ICommandModule {
 			if (GAME_INSTANCE.getPlayers().size() >= 6) {
 				message.getChannel().sendMessage(PREFIX + "The game reached the maximum amount of players possible (6). You can't join the game.");
 				return;
+
 			}
 
 			User user = message.getUserAuthor().get();

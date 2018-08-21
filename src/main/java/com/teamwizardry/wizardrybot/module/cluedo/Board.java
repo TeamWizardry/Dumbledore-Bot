@@ -170,7 +170,7 @@ public class Board {
 										EnumTile tile = getTile(vec);
 										if (tile.isRoom()) {
 											Set<Vec2d> tiles = rooms.get(tile);
-											Vec2d center = calculateCentroid(tiles).mul(100).add(50);
+											Vec2d center = Utils.calculateCentroid(tiles).mul(100).add(50);
 											Vec2d edge1 = offset.sub(perp).mul(50).add(cardinal.getVector().opposite().mul(wallThickness));
 
 											Vec2d hinge1Start = edge1.opposite().mul(50 - wallThickness);
@@ -299,7 +299,7 @@ public class Board {
 
 			Vec2d upperLeftCorner = getUpperLeftCorner(tiles).mul(100).add(50);
 			Vec2d size = getBoundingSize(tiles).mul(100);
-			Vec2d center = calculateCentroid(tiles).add(50);
+			Vec2d center = Utils.calculateCentroid(tiles).add(50);
 			if (size == null || center == null) continue;
 
 			graphics.setColor(Color.RED);
@@ -374,16 +374,6 @@ public class Board {
 		if (smallest == null || largest == null) return null;
 
 		return largest.sub(smallest);
-	}
-
-	public Vec2d calculateCentroid(Set<Vec2d> room) {
-		double centroidX = 0, centroidY = 0;
-
-		for (Vec2d vec : room) {
-			centroidX += vec.x;
-			centroidY += vec.y;
-		}
-		return new Vec2d(centroidX / room.size(), centroidY / room.size());
 	}
 
 	@Nullable

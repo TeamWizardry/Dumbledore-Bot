@@ -6,31 +6,30 @@ import com.google.gson.JsonObject;
 import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AzureEyeball {
 
 	private ImageColor color = null;
 	private Metadata metadata = null;
 	private Tags tags = null;
-	private String description = "";
-	private Faces faces = null;
+	private Description description = null;
+	private SimpleFaces faces = null;
+	private Categories categories = null;
 
-	public AzureEyeball(JsonElement analyze, JsonElement describe, JsonElement face) {
-		if (analyze.isJsonObject()) {
-			JsonObject object = analyze.getAsJsonObject();
+	public AzureEyeball(@Nullable JsonElement received) {
+		if (received != null && received.isJsonObject()) {
+			JsonObject object = received.getAsJsonObject();
+			if (object.has("description") && object.has("faces") && object.has("categories") && object.has("color")) {
 
-			metadata = new Metadata(object);
-			color = new ImageColor(object);
-			tags = new Tags(object);
-			faces = new Faces(face);
-			if (object.isJsonObject()) {
-				JsonObject describeObject = describe.getAsJsonObject();
-				description = new Description(describeObject).getDescription();
+				metadata = new Metadata(object);
+				color = new ImageColor(object);
+				tags = new Tags(object);
+				faces = new SimpleFaces(object);
+				description = new Description(object);
+				categories = new Categories(object);
 			}
 		}
 	}
@@ -47,12 +46,16 @@ public class AzureEyeball {
 		return tags;
 	}
 
-	public String getDescription() {
+	public Description getDescription() {
 		return description;
 	}
 
-	public Faces getFaces() {
+	public SimpleFaces getFaces() {
 		return faces;
+	}
+
+	public Categories getCategories() {
+		return categories;
 	}
 
 	public static class Emotion {
@@ -71,6 +74,181 @@ public class AzureEyeball {
 
 		public String getEmotion() {
 			return emotion;
+		}
+	}
+
+	public static class Celebrity {
+		private String name;
+		private float confidence;
+		private Vec2d corner1, corner2;
+
+		public Celebrity(String name, float confidence, Vec2d corner1, Vec2d corner2) {
+			this.name = name;
+			this.confidence = confidence;
+			this.corner1 = corner1;
+			this.corner2 = corner2;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public float getConfidence() {
+			return confidence;
+		}
+
+		public Vec2d getCorner1() {
+			return corner1;
+		}
+
+		public Vec2d getCorner2() {
+			return corner2;
+		}
+	}
+
+	public static class LandMark {
+
+		private String name;
+		private float confidence;
+
+		public LandMark(String name, float confidence) {
+			this.name = name;
+			this.confidence = confidence;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public float getConfidence() {
+			return confidence;
+		}
+	}
+
+	public static class Categories {
+
+		private Set<Celebrity> celebrities = new HashSet<>();
+		private Set<LandMark> landmarks = new HashSet<>();
+
+		Categories(JsonObject object) {
+			if (object.has("categories") && object.get("categories").isJsonArray()) {
+				JsonArray categories = object.getAsJsonArray("categories");
+
+				for (JsonElement element : categories) {
+					if (!element.isJsonObject()) continue;
+					JsonObject category = element.getAsJsonObject();
+
+					if (category.has("detail")) {
+						JsonObject detail = category.getAsJsonObject("detail");
+
+						if (detail.has("celebrities") && detail.get("celebrities").isJsonArray()) {
+							for (JsonElement element1 : detail.getAsJsonArray("celebrities")) {
+								JsonObject celebrity = element1.getAsJsonObject();
+
+								if (celebrity.has("faceRectangle") && celebrity.has("name") && celebrity.has("confidence")) {
+									String name = celebrity.getAsJsonPrimitive("name").getAsString();
+									float confidence = celebrity.getAsJsonPrimitive("confidence").getAsFloat();
+
+									Vec2d corner1, corner2;
+									if (celebrity.has("faceRectangle") && celebrity.get("faceRectangle").isJsonObject()) {
+										JsonObject faceRectangle = celebrity.getAsJsonObject("faceRectangle");
+										corner1 = new Vec2d(faceRectangle.getAsJsonPrimitive("left").getAsInt(), faceRectangle.getAsJsonPrimitive("top").getAsInt());
+										corner2 = new Vec2d(faceRectangle.getAsJsonPrimitive("width").getAsInt(), faceRectangle.getAsJsonPrimitive("height").getAsInt());
+
+										celebrities.add(new Celebrity(name, confidence, corner1, corner2));
+									}
+								}
+							}
+						}
+
+						if (detail.has("landmarks") && detail.get("landmarks").isJsonArray()) {
+							for (JsonElement element1 : detail.getAsJsonArray("landmarks")) {
+								JsonObject landmark = element1.getAsJsonObject();
+
+								if (landmark.has("name") && landmark.has("confidence")) {
+									landmarks.add(new LandMark(landmark.getAsJsonPrimitive("name").getAsString(), landmark.getAsJsonPrimitive("confidence").getAsFloat()));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		public Set<Celebrity> getCelebrities() {
+			return celebrities;
+		}
+
+		public Set<LandMark> getLandmarks() {
+			return landmarks;
+		}
+	}
+
+	public class SimpleFace {
+		private Vec2d corner1, corner2;
+		private String gender;
+		private int age;
+
+		public SimpleFace(Vec2d corner1, Vec2d corner2, String gender, int age) {
+			this.corner1 = corner1;
+			this.corner2 = corner2;
+			this.gender = gender;
+			this.age = age;
+		}
+
+		public Vec2d getCorner1() {
+			return corner1;
+		}
+
+		public Vec2d getCorner2() {
+			return corner2;
+		}
+
+		public String getGender() {
+			return gender;
+		}
+
+		public int getAge() {
+			return age;
+		}
+	}
+
+	public class SimpleFaces {
+
+		private HashSet<SimpleFace> faces = new HashSet<>();
+
+		SimpleFaces(JsonObject obj) {
+			if (obj.has("faces") && obj.get("faces").isJsonArray()) {
+				JsonArray elements = obj.getAsJsonArray("faces");
+				for (JsonElement faces : elements) {
+					if (!faces.isJsonObject()) continue;
+					JsonObject face = faces.getAsJsonObject();
+
+					Vec2d corner1 = null, corner2 = null;
+					String gender = null;
+					int age = -1;
+
+					if (face.has("faceRectangle") && face.get("faceRectangle").isJsonObject()) {
+						JsonObject faceRectangle = face.getAsJsonObject("faceRectangle");
+						corner1 = new Vec2d(faceRectangle.getAsJsonPrimitive("left").getAsInt(), faceRectangle.getAsJsonPrimitive("top").getAsInt());
+						corner2 = new Vec2d(faceRectangle.getAsJsonPrimitive("width").getAsInt(), faceRectangle.getAsJsonPrimitive("height").getAsInt());
+					}
+
+					if (face.has("gender") && face.get("gender").isJsonPrimitive()) {
+						gender = face.getAsJsonPrimitive("gender").getAsString();
+					}
+
+					if (face.has("age") && face.get("age").isJsonPrimitive()) {
+						age = face.getAsJsonPrimitive("age").getAsInt();
+					}
+
+					this.faces.add(new SimpleFace(corner1, corner2, gender, age));
+				}
+			}
+		}
+
+		public HashSet<SimpleFace> getFaces() {
+			return faces;
 		}
 	}
 
@@ -181,9 +359,9 @@ public class AzureEyeball {
 
 		private HashSet<Face> faces = new HashSet<>();
 
-		Faces(JsonElement element) {
-			if (element.isJsonArray()) {
-				JsonArray elements = element.getAsJsonArray();
+		Faces(JsonObject obj) {
+			if (obj.has("faces") && obj.get("faces").isJsonArray()) {
+				JsonArray elements = obj.getAsJsonArray("faces");
 				for (JsonElement faces : elements) {
 					if (!faces.isJsonObject()) continue;
 					JsonObject face = faces.getAsJsonObject();
@@ -302,44 +480,35 @@ public class AzureEyeball {
 
 	public class Description {
 
-		private String description = "";
+		private HashMap<String, Float> captions = new HashMap<>();
 
 		Description(JsonObject object) {
 			if (object.has("description") && object.get("description").isJsonObject()) {
 				JsonObject description = object.getAsJsonObject("description");
 				if (description.has("captions") && description.get("captions").isJsonArray()) {
 
-					JsonObject bestCaption = null;
 
 					JsonArray captions = description.getAsJsonArray("captions");
 					for (JsonElement captionElement : captions) {
 						if (!captionElement.isJsonObject()) continue;
 						JsonObject caption = captionElement.getAsJsonObject();
 
-						if (bestCaption == null) bestCaption = caption;
-						if (caption.has("confidence") && caption.get("confidence").isJsonPrimitive()) {
-							if (caption.getAsJsonPrimitive("confidence").getAsFloat() > bestCaption.getAsJsonPrimitive("confidence").getAsFloat()) {
-								bestCaption = caption;
-							}
+						if (caption.has("confidence") && caption.has("text")) {
+							this.captions.put(caption.getAsJsonPrimitive("text").getAsString(), caption.getAsJsonPrimitive("confidence").getAsFloat());
 						}
-					}
-
-					if (bestCaption != null) {
-						this.description = bestCaption.getAsJsonPrimitive("text").getAsString();
 					}
 				}
 			}
 		}
 
-		public String getDescription() {
-			return description;
+		public HashMap<String, Float> getCaptions() {
+			return captions;
 		}
 	}
 
 	public class Tags {
 
-		private ArrayList<String> tags = new ArrayList<>();
-		private String readableTags = "";
+		private HashMap<String, Float> tags = new HashMap<>();
 
 		Tags(JsonObject object) {
 			if (object.has("tags") && object.get("tags").isJsonArray()) {
@@ -348,57 +517,49 @@ public class AzureEyeball {
 				for (JsonElement tagElement : tags) {
 					if (!tagElement.isJsonObject()) continue;
 					JsonObject tag = tagElement.getAsJsonObject();
-					if (tag.has("confidence")
-							&& tag.get("confidence").isJsonPrimitive()
-							&& tag.getAsJsonPrimitive("confidence").getAsFloat() >= 0.8) {
-						if (tag.has("name") && tag.get("name").isJsonPrimitive())
-							this.tags.add(tag.getAsJsonPrimitive("name").getAsString());
+
+					if (tag.has("name") && tag.has("confidence")) {
+						this.tags.put(tag.getAsJsonPrimitive("name").getAsString(), tag.getAsJsonPrimitive("confidence").getAsFloat());
 					}
 				}
 			}
-
-			StringBuilder builder = new StringBuilder();
-			for (String tag : tags) {
-				builder.append(tag).append(", ");
-			}
-			readableTags = builder.toString();
 		}
 
-		public String getReadableTags() {
-			return readableTags;
+		public HashMap<String, Float> getTags() {
+			return tags;
 		}
 	}
 
 	public class ImageColor {
 
-		@Nullable
+		@Nonnull
 		private Color dominantColorForeground = Color.WHITE;
-		@Nullable
+		@Nonnull
 		private Color dominantColorBackground = Color.WHITE;
-		@Nullable
+		@Nonnull
 		private Color accentColor = Color.WHITE;
-		@Nullable
+		@Nonnull
 		private Color[] dominantColors = new Color[]{Color.WHITE};
 
 		ImageColor(JsonObject object) {
 			if (object.has("color") && object.get("color").isJsonObject()) {
 				JsonObject color = object.getAsJsonObject("color");
 				if (color.has("dominantColorForeground") && color.get("dominantColorForeground").isJsonPrimitive()) {
-					dominantColorBackground = new ColorUtils().getColorFromName(color.getAsJsonPrimitive("dominantColorForeground").getAsString());
+					dominantColorBackground = ColorUtils.getColorFromName(color.getAsJsonPrimitive("dominantColorForeground").getAsString(), Color.WHITE);
 				}
 				if (color.has("dominantColorBackground") && color.get("dominantColorBackground").isJsonPrimitive()) {
-					dominantColorBackground = new ColorUtils().getColorFromName(color.getAsJsonPrimitive("dominantColorBackground").getAsString());
+					dominantColorBackground = ColorUtils.getColorFromName(color.getAsJsonPrimitive("dominantColorBackground").getAsString(), Color.WHITE);
 				}
 				if (color.has("accentColor") && color.get("accentColor").isJsonPrimitive()) {
-					//int hex = color.getAsJsonPrimitive("accentColor").getAsInt();
-					//accentColor = Color.decode(hex + "");
+					//	String hex = color.getAsJsonPrimitive("accentColor").getAsString();
+					//	accentColor = Color.decode(hex);
 				}
 				if (color.has("dominantColors") && color.get("dominantColors").isJsonArray()) {
 					ArrayList<Color> colors = new ArrayList<>();
 					JsonArray dominantColorsArray = color.getAsJsonArray("dominantColors");
 					for (JsonElement colorElement : dominantColorsArray) {
 						if (colorElement.isJsonPrimitive()) {
-							colors.add(new ColorUtils().getColorFromName(colorElement.getAsJsonPrimitive().getAsString()));
+							colors.add(ColorUtils.getColorFromName(colorElement.getAsJsonPrimitive().getAsString()));
 						}
 					}
 					dominantColors = new Color[colors.size()];

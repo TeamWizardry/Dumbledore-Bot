@@ -3,14 +3,12 @@ package com.teamwizardry.wizardrybot.api;
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.teamwizardry.wizardrybot.Keys;
 import com.teamwizardry.wizardrybot.WizardryBot;
 import com.teamwizardry.wizardrybot.api.math.Vec2d;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.jasypt.util.text.BasicTextEncryptor;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAttachment;
 import org.javacord.api.entity.permission.Role;
@@ -23,9 +21,14 @@ import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.*;
+import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -115,6 +118,17 @@ public class Utils {
 		return null;
 	}
 
+	public static String imgToBase64String(final RenderedImage img, final String formatName) {
+		final ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+		try {
+			ImageIO.write(img, formatName, os);
+			return Base64.encodeBase64String(os.toByteArray());
+		} catch (final IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		}
+	}
+
 	public static void sendWebhookMessage(Webhook webhook, String message, String username, String avatarURL) {
 		webhook.getToken().ifPresent(token -> {
 			JsonObject object = new JsonObject();
@@ -180,109 +194,15 @@ public class Utils {
 		return string;
 	}
 
-	@Nullable
-	public static User lookupUserFromHash(JsonObject object, DiscordApi api) {
+	public static User getUser(long id, DiscordApi api) {
 		for (Server server : api.getServers()) {
 			for (User user : server.getMembers()) {
-				if (checkHashMatch(user.getIdAsString(), object)) {
+				if (user.getId() == id) {
 					return user;
 				}
 			}
 		}
 		return null;
-	}
-
-	@Nullable
-	public static User lookupUserFromHash(JsonObject object, Channel channel) {
-		for (User user : channel.getApi().getServerChannelById(channel.getId()).get().getServer().getMembers()) {
-			if (checkHashMatch(user.getIdAsString(), object)) {
-				return user;
-			}
-		}
-		return null;
-	}
-
-	@Nullable
-	public static User lookupUserFromHash(String hash, String salt, Channel channel) {
-		for (User user : channel.getApi().getServerChannelById(channel.getId()).get().getServer().getMembers()) {
-			if (checkHashMatch(user.getIdAsString(), hash, salt)) {
-				return user;
-			}
-		}
-		return null;
-	}
-
-	@Nullable
-	public static User lookupUserFromHash(String hash, String salt) {
-		for (Server server : WizardryBot.API.getServers())
-			for (User user : server.getMembers()) {
-				if (checkHashMatch(user.getIdAsString(), hash, salt)) {
-					return user;
-				}
-			}
-		return null;
-	}
-
-	public static boolean checkHashMatch(String plainText, JsonObject object) {
-		BytePair hashSalt = getHashSalt(object);
-		if (hashSalt == null) return false;
-		return checkHashMatch(plainText, hashSalt);
-	}
-
-	public static boolean checkHashMatch(String plainText, BytePair pair) {
-		return checkHashMatch(plainText, pair.getKey(), pair.getValue());
-	}
-
-	public static boolean checkHashMatch(String plainText, String hash, String salt) {
-		return checkHashMatch(plainText, salt.getBytes(), hash.getBytes());
-	}
-
-	public static boolean checkHashMatch(String plainText, byte[] hash, byte[] salt) {
-		return Crypto.isExpectedPassword(plainText.toCharArray(), salt, hash);
-	}
-
-	@Nullable
-	public static BytePair getHashSalt(JsonObject object) {
-		if (!object.has("salt") || !object.has("hash")) return null;
-
-		byte[] salt = Base64.decodeBase64(object.getAsJsonPrimitive("salt").getAsString());
-		byte[] hash = Base64.decodeBase64(object.getAsJsonPrimitive("hash").getAsString());
-
-		return new BytePair(hash, salt);
-	}
-
-	public static JsonObject encryptString(User user) {
-		return encryptString(user.getIdAsString());
-	}
-
-	public static JsonObject encryptString(String string) {
-		JsonObject object = new JsonObject();
-		byte[] saltBytes = Crypto.getNextSalt();
-		String salt = Base64.encodeBase64String(saltBytes);
-		object.addProperty("salt", salt);
-		object.addProperty("hash", Base64.encodeBase64String(Crypto.hash(string.toCharArray(), saltBytes)));
-
-		return object;
-	}
-
-	public static String encrypt(String string) {
-		BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
-		textEncryptor.setPassword(Keys.PASSWORD);
-		return textEncryptor.encrypt(string);
-
-	}
-
-	public static String decrypt(String string) {
-		BasicTextEncryptor textEncryptor = new BasicTextEncryptor();
-		textEncryptor.setPassword(Keys.PASSWORD);
-		return textEncryptor.decrypt(string);
-	}
-
-	public static byte[] getMACAddress() throws SocketException, UnknownHostException {
-		InetAddress address = InetAddress.getLocalHost();
-		NetworkInterface networkInterface = NetworkInterface.getByInetAddress(address);
-
-		return networkInterface.getHardwareAddress();
 	}
 
 	@Nonnull
@@ -449,5 +369,22 @@ public class Utils {
 		}
 
 		return null;
+	}
+
+	public static String readableFileSize(long size) {
+		if (size <= 0) return "0";
+		final String[] units = new String[]{"B", "kB", "MB", "GB", "TB"};
+		int digitGroups = (int) (Math.log10(size) / Math.log10(1024));
+		return new DecimalFormat("#,##0.#").format(size / Math.pow(1024, digitGroups)) + " " + units[digitGroups];
+	}
+
+	public static Vec2d calculateCentroid(Set<Vec2d> room) {
+		double centroidX = 0, centroidY = 0;
+
+		for (Vec2d vec : room) {
+			centroidX += vec.x;
+			centroidY += vec.y;
+		}
+		return new Vec2d(centroidX / room.size(), centroidY / room.size());
 	}
 }

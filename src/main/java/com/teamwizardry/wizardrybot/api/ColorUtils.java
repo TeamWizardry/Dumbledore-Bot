@@ -1,5 +1,8 @@
 package com.teamwizardry.wizardrybot.api;
 
+import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -203,6 +206,17 @@ public class ColorUtils {
 		return null;
 	}
 
+	@Nonnull
+	public static Color getColorFromName(@Nullable String color, @Nonnull Color fallback) {
+		if (color == null) return fallback;
+
+		for (ColorName c : colorList) {
+			if (c.name.equalsIgnoreCase(color)) {
+				return new Color(c.getR(), c.getG(), c.getG());
+			}
+		}
+		return fallback;
+	}
 
 	/**
 	 * Convert hexColor to rgb, then call getColorNameFromRgb(r, g, b)

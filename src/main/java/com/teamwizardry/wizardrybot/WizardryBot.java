@@ -4,6 +4,7 @@ package com.teamwizardry.wizardrybot;
 import ai.api.model.Result;
 import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.api.math.RandUtil;
+import com.teamwizardry.wizardrybot.api.twilio.TwilioWebListener;
 import com.teamwizardry.wizardrybot.module.ModuleAboutCommand;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -236,7 +237,7 @@ public class WizardryBot {
 		Result result = command.getResult();
 		Statistics.INSTANCE.addToStat("messages_analyzed");
 
-		boolean shouldRespond = shouldRespond(command, message);
+		boolean shouldRespond = shouldRespond(command);
 
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
@@ -318,7 +319,7 @@ public class WizardryBot {
 		}
 	}
 
-	private static boolean shouldRespond(Command command, Message message) {
+	private static boolean shouldRespond(Command command) {
 		return command.hasSaidHey();
 	}
 

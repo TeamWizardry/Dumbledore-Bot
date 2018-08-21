@@ -307,6 +307,8 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								RenderingHints.VALUE_ANTIALIAS_ON);
 						graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
 								RenderingHints.VALUE_RENDER_QUALITY);
+						graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+								RenderingHints.VALUE_STROKE_PURE);
 
 						// --- LOOP IMAGES --- //
 						for (int j = 0; j < boxes.length; j++) {
@@ -638,7 +640,10 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 							if (text.contains("/n"))
 								split = text.split("/n");
+							else if (text.contains("/N"))
+								split = text.split("/N");
 							else split = new String[]{text};
+
 							for (int i = 0; i < split.length; i++) {
 								String line = split[i].trim();
 

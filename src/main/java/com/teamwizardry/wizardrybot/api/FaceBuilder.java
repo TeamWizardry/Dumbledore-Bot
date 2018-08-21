@@ -14,8 +14,8 @@ public class FaceBuilder {
 	private float beard;
 	private float sideburns;
 	private String glasses;
-	private String[] hairColor;
-	private AzureEyeball.Emotion[] emotions;
+	private String[] hairColor = new String[0];
+	private AzureEyeball.Emotion[] emotions = new AzureEyeball.Emotion[0];
 	private String exposureLevel;
 	private boolean lipMakeup;
 	private boolean eyeMakeup;

@@ -65,13 +65,13 @@ public class RemindMeRunnable implements Runnable {
 									&& reminder.has("reminder")
 									&& reminder.get("reminder").isJsonPrimitive()
 									&& reminder.has("user")
-									&& reminder.get("user").isJsonObject()
+									&& reminder.get("user").isJsonPrimitive()
 									&& reminder.has("origin_time")
 									&& reminder.get("origin_time").isJsonPrimitive()) {
-								String message = Utils.decrypt(reminder.getAsJsonPrimitive("reminder").getAsString());
+								String message = reminder.getAsJsonPrimitive("reminder").getAsString();
 								DateTime time = new DateTime(reminder.getAsJsonPrimitive("time").getAsLong());
 								long originTime = reminder.getAsJsonPrimitive("origin_time").getAsLong();
-								JsonObject userObject = reminder.getAsJsonObject("user");
+								long userID = reminder.getAsJsonPrimitive("user").getAsLong();
 
 								Channel channel = null;
 								Server server = null;
@@ -85,7 +85,7 @@ public class RemindMeRunnable implements Runnable {
 
 								try {
 									if (time.getMillis() - System.currentTimeMillis() <= 0) {
-										User user = Utils.lookupUserFromHash(userObject, channel);
+										User user = Utils.getUser(userID, WizardryBot.API);
 										if (user != null) {
 
 											String or;

@@ -5,7 +5,6 @@ import com.google.gson.*;
 import com.teamwizardry.wizardrybot.api.Command;
 import com.teamwizardry.wizardrybot.api.ICommandModule;
 import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.Utils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.Message;
 import org.joda.time.DateTime;
@@ -122,7 +121,7 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 				if (element.isJsonObject()) {
 					JsonObject object1 = element.getAsJsonObject();
 					if (object1.has("user") && object1.get("user").isJsonPrimitive()) {
-						if (Utils.checkHashMatch(message.getAuthor().getIdAsString(), object1.getAsJsonObject("user")))
+						if (message.getAuthor().getId() == object1.getAsJsonPrimitive("user").getAsLong())
 							count++;
 					}
 				}
@@ -139,11 +138,11 @@ public class ModuleRemindMe extends Module implements ICommandModule {
 			}
 
 			JsonObject object1 = new JsonObject();
-			object1.add("user", Utils.encryptString(message.getAuthor().getIdAsString()));
+			object1.addProperty("user", message.getAuthor().getId());
 			if (message.getChannel() != null)
 				object1.addProperty("channel", message.getChannel().getId() + "@" + message.getServer().get().getId());
 			object1.addProperty("time", finalDate.getMillis());
-			object1.addProperty("reminder", Utils.encrypt(reminder));
+			object1.addProperty("reminder", reminder);
 			object1.addProperty("origin_time", System.currentTimeMillis());
 
 			array.add(object1);

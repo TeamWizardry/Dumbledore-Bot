@@ -1,4 +1,4 @@
-package com.teamwizardry.wizardrybot;
+package com.teamwizardry.wizardrybot.api.twilio;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

@@ -1,10 +1,7 @@
 package com.teamwizardry.wizardrybot.module.correct;
 
 import ai.api.model.Result;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import com.mashape.unirest.http.HttpResponse;
@@ -67,7 +64,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 	public boolean onCommand(DiscordApi api, Message message, Command command, Result result, boolean whatsapp) {
 		if (!command.hasSaidHey()) return true;
 
-		File file = new File("autocorrect.json");
+		File file = new File("bin/autocorrect.json");
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -84,18 +81,18 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 				JsonArray array = element.getAsJsonArray();
 				User autocorrectUser = null;
 
-				JsonObject userObject = null;
+				JsonPrimitive userIDElement = null;
 				for (JsonElement object : array) {
-					if (object.isJsonObject()) {
-						User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
+					if (object.isJsonPrimitive()) {
+						User user = Utils.getUser(object.getAsLong(), api);
 						if (user == null) continue;
-						userObject = object.getAsJsonObject();
+						userIDElement = object.getAsJsonPrimitive();
 						autocorrectUser = user;
 						break;
 					}
 				}
 				if (autocorrectUser == null) {
-					array.add(Utils.encryptString(message.getAuthor().getIdAsString()));
+					array.add(message.getAuthor().getId());
 					try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(file.toPath()))) {
 						Streams.write(array, writer);
 						message.getChannel().sendMessage("You will now be autocorrected");
@@ -105,7 +102,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 						message.getChannel().sendMessage("```" + Arrays.toString(e.getStackTrace()) + "```");
 					}
 				} else {
-					array.remove(userObject);
+					array.remove(userIDElement);
 					try (JsonWriter writer = new JsonWriter(Files.newBufferedWriter(file.toPath()))) {
 						Streams.write(array, writer);
 						message.getChannel().sendMessage("You will no longer be autocorrected");
@@ -127,7 +124,7 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 		if (command.hasSaidHey()) return;
 
-		File file = new File("autocorrect.json");
+		File file = new File("bin/autocorrect.json");
 		if (!file.exists()) {
 			try {
 				file.createNewFile();
@@ -143,8 +140,8 @@ public class ModuleAutoCorrectToggled extends Module implements ICommandModule {
 				JsonArray array = element.getAsJsonArray();
 
 				for (JsonElement object : array) {
-					if (object.isJsonObject()) {
-						User user = Utils.lookupUserFromHash(object.getAsJsonObject(), api);
+					if (object.isJsonPrimitive()) {
+						User user = Utils.getUser(object.getAsLong(), api);
 						if (user == null) continue;
 						autoCorrect = true;
 						break;
