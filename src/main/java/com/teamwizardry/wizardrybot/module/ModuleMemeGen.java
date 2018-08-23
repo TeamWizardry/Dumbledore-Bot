@@ -718,66 +718,137 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 
 				// ---------- DOESNT HAVE PARAMS ---------- //
-				if (!hasParams && id != null) {
-					try {
-						HttpResponse<JsonNode> response = null;
+				if (!hasParams) {
+					if (id != null) {
+						try {
+							HttpResponse<JsonNode> response = null;
 
-						if (boxes.length == 1) {
+							if (boxes.length == 1) {
 
-							response = Unirest.post("https://api.imgflip.com/caption_image")
-									.field("username", "imgflip_hubot")
-									.field("password", "imgflip_hubot")
-									.field("template_id", id)
-									.field("text0", boxes[0])
-									.asJson();
+								response = Unirest.post("https://api.imgflip.com/caption_image")
+										.field("username", "imgflip_hubot")
+										.field("password", "imgflip_hubot")
+										.field("template_id", id)
+										.field("text0", boxes[0])
+										.asJson();
 
-						} else if (boxes.length == 2) {
+							} else if (boxes.length == 2) {
 
-							response = Unirest.post("https://api.imgflip.com/caption_image")
-									.field("username", "imgflip_hubot")
-									.field("password", "imgflip_hubot")
-									.field("template_id", id)
-									.field("text0", boxes[0])
-									.field("text1", boxes[1])
-									.asJson();
+								response = Unirest.post("https://api.imgflip.com/caption_image")
+										.field("username", "imgflip_hubot")
+										.field("password", "imgflip_hubot")
+										.field("template_id", id)
+										.field("text0", boxes[0])
+										.field("text1", boxes[1])
+										.asJson();
 
-						}
-
-						if (response == null) {
-							message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-						} else {
-							JsonElement element = new JsonParser().parse(response.getBody().toString());
-							if (!element.isJsonObject()) {
-								message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-								return true;
 							}
 
-							JsonObject object = element.getAsJsonObject();
-
-							if (object.has("success")) {
-								if (!object.getAsJsonPrimitive("success").getAsBoolean()) {
-									message.getChannel().sendMessage("Can't create meme! Response:");
-									message.getChannel().sendMessage("```" + object.toString() + "```");
+							if (response == null) {
+								message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
+							} else {
+								JsonElement element = new JsonParser().parse(response.getBody().toString());
+								if (!element.isJsonObject()) {
+									message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
 									return true;
 								}
-							}
 
-							if (object.has("data") && object.get("data").isJsonObject()) {
-								JsonObject dataObject = object.getAsJsonObject("data");
+								JsonObject object = element.getAsJsonObject();
 
-								if (dataObject.has("url") && dataObject.get("url").isJsonPrimitive()) {
-									String url1 = dataObject.getAsJsonPrimitive("url").getAsString();
+								if (object.has("success")) {
+									if (!object.getAsJsonPrimitive("success").getAsBoolean()) {
+										message.getChannel().sendMessage("Can't create meme! Response:");
+										message.getChannel().sendMessage("```" + object.toString() + "```");
+										return true;
+									}
+								}
 
-									message.getChannel().sendMessage(ImgurUploader.upload(url1));
-									Statistics.INSTANCE.addToStat("successful_meme_generations");
+								if (object.has("data") && object.get("data").isJsonObject()) {
+									JsonObject dataObject = object.getAsJsonObject("data");
 
+									if (dataObject.has("url") && dataObject.get("url").isJsonPrimitive()) {
+										String url1 = dataObject.getAsJsonPrimitive("url").getAsString();
+
+										message.getChannel().sendMessage(ImgurUploader.upload(url1));
+										Statistics.INSTANCE.addToStat("successful_meme_generations");
+
+									}
 								}
 							}
-						}
 
-					} catch (UnirestException e) {
-						message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
-						e.printStackTrace();
+						} catch (UnirestException e) {
+							message.getChannel().sendMessage("Something went wrong. Yell at my maker.");
+							e.printStackTrace();
+						}
+					} else if (imgDims != null) {
+						try {
+							Graphics2D graphics = bufferedImg.createGraphics();
+							graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+									RenderingHints.VALUE_ANTIALIAS_ON);
+							graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
+									RenderingHints.VALUE_RENDER_QUALITY);
+							graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+									RenderingHints.VALUE_STROKE_PURE);
+
+							for (int i = 0; i < boxes.length; i++) {
+								String box = boxes[i];
+
+								int fontSize = 50;
+								Font fontObj = new Font("Impact", Font.PLAIN, fontSize);
+
+								int width = Integer.MAX_VALUE;
+								while (fontSize >= 10 && width >= imgDims.x) {
+									fontObj = new Font("Impact", Font.PLAIN, --fontSize);
+									width = graphics.getFontMetrics(fontObj).stringWidth(box);
+								}
+
+								Rectangle2D textBounds = graphics.getFontMetrics(fontObj).getStringBounds(box, graphics);
+
+								Vec2d loc = null;
+								if (i == 0) {
+									loc = Utils.getVecFromName("top", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+
+								} else if (i == 1) {
+									if (boxes.length == 2) {
+										loc = Utils.getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+									} else {
+										loc = Utils.getVecFromName("center", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+									}
+								} else if (i == 2) {
+									loc = Utils.getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
+								}
+
+								graphics.translate(loc.x, loc.y + textBounds.getHeight());
+
+								GlyphVector vector = fontObj.createGlyphVector(graphics.getFontRenderContext(), box);
+								Shape textShape = vector.getOutline();
+
+								graphics.setStroke(new BasicStroke(5));
+								graphics.setColor(Color.BLACK);
+								graphics.draw(textShape);
+
+								graphics.setColor(Color.WHITE);
+								graphics.fill(textShape);
+
+								graphics.translate(-loc.x, -loc.y - textBounds.getHeight());
+
+							}
+
+							graphics.dispose();
+
+							File file = new File("downloads/meme_" + id + "_" + UUID.randomUUID() + ".jpeg");
+							if (!file.exists()) file.createNewFile();
+							ImageIO.write(bufferedImg, "jpeg", file);
+
+							message.getChannel().sendMessage(ImgurUploader.upload(file));
+
+							Statistics.INSTANCE.addToStat("successful_meme_generations");
+
+							file.delete();
+						} catch (IOException e) {
+							message.getChannel().sendMessage("Something went wrong! I couldn't draw the image! Sorry...");
+							e.printStackTrace();
+						}
 					}
 				}
 			}
