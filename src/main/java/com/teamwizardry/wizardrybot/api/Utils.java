@@ -321,7 +321,7 @@ public class Utils {
 			case "topcenter":
 			case "centertop":
 			case "top": {
-				double x = (imgDims.x / 2.0) + (objDims.x / 2.0);
+				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
 				double y = objDims.y;
 
 				return new Vec2d(x, y);
@@ -331,7 +331,7 @@ public class Utils {
 			case "centerbottom":
 			case "bottom": {
 				double x = (imgDims.x / 2.0) - (objDims.x / 2.0);
-				double y = imgDims.y - objDims.y;
+				double y = imgDims.y - objDims.y / 2.0;
 
 				return new Vec2d(x, y);
 			}

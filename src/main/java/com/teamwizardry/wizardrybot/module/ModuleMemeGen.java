@@ -818,7 +818,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 									loc = Utils.getVecFromName("bottom", imgDims, new Vec2d(textBounds.getWidth(), textBounds.getHeight()));
 								}
 
-								graphics.translate(loc.x, loc.y + textBounds.getHeight());
+								graphics.translate(loc.x, loc.y);
 
 								GlyphVector vector = fontObj.createGlyphVector(graphics.getFontRenderContext(), box);
 								Shape textShape = vector.getOutline();
@@ -830,7 +830,7 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								graphics.setColor(Color.WHITE);
 								graphics.fill(textShape);
 
-								graphics.translate(-loc.x, -loc.y - textBounds.getHeight());
+								graphics.translate(-loc.x, -loc.y);
 
 							}
 
