@@ -697,7 +697,6 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 							}
 						}
 
-
 						graphics.dispose();
 
 						File file = new File("downloads/meme_" + id + "_" + UUID.randomUUID() + ".jpeg");

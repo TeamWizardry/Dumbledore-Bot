@@ -27,6 +27,11 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.Demoniaque</groupId>
+            <artifactId>MathParser.org-mXparser</artifactId>
+            <version>515fc1c445</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>

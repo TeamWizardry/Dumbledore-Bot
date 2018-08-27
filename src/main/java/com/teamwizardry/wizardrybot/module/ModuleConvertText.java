@@ -94,12 +94,24 @@ public class ModuleConvertText extends Module {
 	}
 
 	private void processText(Message message, String text) {
-		if (text.contains("Time: ") && text.contains("at net.minecraft")) {
+		if (text.contains("A detailed walkthrough of the error, its code path and all known details is as follows:")) {
 			message.getChannel().sendMessage("SUMMARY:");
-			message.getChannel().sendMessage("```" + StringUtils.substringBetween(text, "Time: ", "at net.minecraft") + "```");
+			String chunk = StringUtils.substringBetween(text, "Description: ", "A detailed walkthrough of the error, its code path and all known details is as follows:");
+
+			StringBuilder chunkBuilder = new StringBuilder();
+			new BufferedReader(new StringReader(chunk)).lines().forEach(line -> {
+				if (!line.contains("at sun") && !line.contains("at GradleStart") && !line.contains("at java") && !line.contains("at com.google")) {
+					chunkBuilder.append(line).append("\n");
+				}
+			});
+
+			if (!chunkBuilder.toString().isEmpty()) {
+				message.getChannel().sendMessage(chunkBuilder.toString());
+			}
+
 		} else if (text.length() > 1500) {
 			List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(text));
-			while (splits.size() > 5) {
+			while (splits.size() > 3) {
 				splits.remove(0);
 			}
 			for (String string : splits)
