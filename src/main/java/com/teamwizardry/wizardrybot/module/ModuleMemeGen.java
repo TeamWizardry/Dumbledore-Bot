@@ -311,9 +311,13 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 								RenderingHints.VALUE_STROKE_PURE);
 
 						// --- LOOP IMAGES --- //
-						for (int j = 0; j < boxes.length - 1; j++) {
+						for (int j = 0; j < boxes.length; j++) {
 							String box = boxes[j];
+
+							if (!paramsMap.containsKey(box)) continue;
+
 							HashMap<String, String> params = paramsMap.get(box);
+							if (paramsMap == null) continue;
 
 							if (!params.containsKey("url")) {
 								continue;
@@ -469,9 +473,13 @@ public class ModuleMemeGen extends Module implements ICommandModule {
 
 						// --- LOOP TEXT --- //
 						boxLoop1:
-						for (int j = 0; j < boxes.length - 1; j++) {
+						for (int j = 0; j < boxes.length; j++) {
 							String box = boxes[j];
+
+							if (!paramsMap.containsKey(box)) continue;
+
 							HashMap<String, String> params = paramsMap.get(box);
+							if (params == null) continue;
 
 							if (!params.containsKey("text")) {
 								continue;
