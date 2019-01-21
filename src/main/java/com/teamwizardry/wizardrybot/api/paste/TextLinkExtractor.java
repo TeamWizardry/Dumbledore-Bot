@@ -10,7 +10,6 @@ public class TextLinkExtractor {
 	private static Set<TextLink> textLinks = new HashSet<>();
 
 	static {
-		textLinks.add(new TextGist());
 		textLinks.add(new TextPasteBin());
 		textLinks.add(new TextPasteee());
 		textLinks.add(new TextHasteBin());

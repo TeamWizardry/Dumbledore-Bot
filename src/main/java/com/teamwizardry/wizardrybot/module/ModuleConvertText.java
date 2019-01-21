@@ -1,11 +1,7 @@
 package com.teamwizardry.wizardrybot.module;
 
 import ai.api.model.Result;
-import com.google.common.base.Splitter;
-import com.teamwizardry.wizardrybot.api.Command;
-import com.teamwizardry.wizardrybot.api.Module;
-import com.teamwizardry.wizardrybot.api.Statistics;
-import com.teamwizardry.wizardrybot.api.Utils;
+import com.teamwizardry.wizardrybot.api.*;
 import com.teamwizardry.wizardrybot.api.paste.TextLinkExtractor;
 import org.apache.commons.lang3.StringUtils;
 import org.javacord.api.DiscordApi;
@@ -19,78 +15,92 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-public class ModuleConvertText extends Module {
-
-	@Override
-	public boolean overrideResponseCheck() {
-		return true;
-	}
-
-	@Override
-	public int getPriority() {
-		return -1;
-	}
+public class ModuleConvertText extends Module implements ICommandModule {
 
 	@Override
 	public String getName() {
-		return "Text File Converter";
+		return "Log Reader";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Will convert text files to hastebin/pastebin links";
+		return "Read an uploaded text file either from a link or direct file upload";
 	}
 
 	@Override
 	public String getUsage() {
-		return "Upload a text file";
+		return "hey albus, read";
 	}
 
 	@Override
 	public String getExample() {
+		return "hey albus, read";
+	}
+
+	@Override
+	public String getActionID() {
 		return null;
 	}
 
 	@Override
-	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
-		for (MessageAttachment attachment : message.getAttachments()) {
-			if (attachment.isImage()) continue;
-			if (attachment.getFileName().contains("txt") || attachment.getFileName().contains("log")) {
+	public String[] getAliases() {
+		return new String[]{"read", "read that file", "read file", "read that link", "read link", "read log"};
+	}
 
-				try {
-					HttpURLConnection urlcon = (HttpURLConnection) attachment.getUrl().openConnection();
-					urlcon.addRequestProperty("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36");
-					System.setProperty("http.agent", "Chrome");
-					BufferedReader reader = new BufferedReader(new InputStreamReader(urlcon.getInputStream()));
-					StringBuilder sb = new StringBuilder();
-					String line;
-					while ((line = reader.readLine()) != null) {
-						sb.append(line).append("\n");
+	@Override
+	public boolean onCommand(DiscordApi api, Message mainMessage, Command command, Result result, boolean whatsapp) {
+		try {
+			List<Message> messageHistory = new ArrayList<>(mainMessage.getChannel().getMessages(20).get());
+
+			Collections.reverse(messageHistory);
+			for (Message message : messageHistory) {
+
+				for (MessageAttachment attachment : message.getAttachments()) {
+					if (attachment.isImage()) continue;
+					if (attachment.getFileName().contains("txt") || attachment.getFileName().contains("log")) {
+
+						try {
+							HttpURLConnection urlcon = (HttpURLConnection) attachment.getUrl().openConnection();
+							urlcon.addRequestProperty("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36");
+							System.setProperty("http.agent", "Chrome");
+							BufferedReader reader = new BufferedReader(new InputStreamReader(urlcon.getInputStream()));
+							StringBuilder sb = new StringBuilder();
+							String line;
+							while ((line = reader.readLine()) != null) {
+								sb.append(line).append("\n");
+							}
+
+							String text = sb.toString();
+							if (text.isEmpty()) continue;
+
+							processText(message, text);
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
+				}
 
-					String text = sb.toString();
-					if (text.isEmpty()) continue;
+				Set<URL> urls = Utils.findURLsInString(message.getContent());
+				if (urls.isEmpty()) return true;
+
+				for (URL url : urls) {
+					String text = TextLinkExtractor.getText(url);
+					if (text == null || text.isEmpty()) continue;
 
 					processText(message, text);
-
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
 			}
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
 		}
 
-		Set<URL> urls = Utils.findURLsInString(message.getContent());
-		if (urls.isEmpty()) return;
-
-		for (URL url : urls) {
-			String text = TextLinkExtractor.getText(url);
-			if (text == null || text.isEmpty()) continue;
-
-			processText(message, text);
-		}
+		return true;
 	}
 
 	private void processText(Message message, String text) {
@@ -108,19 +118,9 @@ public class ModuleConvertText extends Module {
 			if (!chunkBuilder.toString().isEmpty()) {
 				message.getChannel().sendMessage(chunkBuilder.toString());
 			}
-
-		} else if (text.length() > 1500) {
-			List<String> splits = new ArrayList<>(Splitter.fixedLength(1500).splitToList(text));
-			while (splits.size() > 3) {
-				splits.remove(0);
-			}
-			for (String string : splits)
-				message.getChannel().sendMessage("```" + string + "```");
-		} else {
-			message.getChannel().sendMessage("```" + text + "```");
 		}
 
-		Statistics.INSTANCE.addToStat("text_files_summarized");
+		Statistics.INSTANCE.addToStat("crash_reports_summarized");
 
 		if (text.contains("java.lang.NoClassDefFoundError: com/teamwizardry/librarianlib")) {
 			message.getChannel().sendMessage("***Solution: UPDATE LIBRARIANLIB***");

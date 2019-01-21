@@ -198,6 +198,7 @@ public class WizardryBot {
 				}
 			}
 			for (Module module : modules) {
+				module.init(api);
 				commands.add(module.getName().toLowerCase());
 				if (module instanceof ICommandModule) {
 					ICommandModule cmd = (ICommandModule) module;

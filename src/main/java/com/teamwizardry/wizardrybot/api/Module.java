@@ -22,6 +22,9 @@ public abstract class Module {
 		return false;
 	}
 
+	public void init(DiscordApi api) {
+	}
+
 	public abstract String getName();
 
 	public abstract String getDescription();
