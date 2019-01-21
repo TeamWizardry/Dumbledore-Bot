@@ -223,8 +223,7 @@ public class WizardryBot {
 						}
 					}
 				}
-			} else if (!DEV || (messageCreateEvent.getChannel().getId() == 407963020631736323L && messageCreateEvent.getMessage().getContent().startsWith(".")))
-				messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
+			} else messageCreateEvent.getMessage().getUserAuthor().ifPresent(user -> {
 
 					if (user.isBot() || user.isYourself()) return;
 					processMessage(messageCreateEvent.getMessage(), messageCreateEvent.getApi(), false);

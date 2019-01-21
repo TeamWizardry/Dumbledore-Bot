@@ -67,9 +67,9 @@
   </pluginRepositories>
   <dependencies>
     <dependency>
-        <groupId>de.btobastian.Javacord</groupId>
+        <groupId>org.javacord</groupId>
         <artifactId>javacord</artifactId>
-        <version>22c8c32</version>
+        <version>3.0.0</version>
         <type>pom</type>
         <scope>compile</scope>
     </dependency>
