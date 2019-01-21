@@ -16,7 +16,7 @@ import org.javacord.api.entity.user.User;
 public class ModuleCluedo extends Module implements ICommandModule {
 
 	private static String PREFIX = "**[CLUEDO]** > ";
-	private GameCluedo GAME_INSTANCE = new GameCluedo();
+	private GameCluedo GAME_INSTANCE = null;
 
 	@Override
 	public String getName() {
@@ -46,6 +46,11 @@ public class ModuleCluedo extends Module implements ICommandModule {
 	@Override
 	public String[] getAliases() {
 		return new String[]{"cluedo"};
+	}
+
+	@Override
+	public boolean isDisabled() {
+		return true;
 	}
 
 	@Override

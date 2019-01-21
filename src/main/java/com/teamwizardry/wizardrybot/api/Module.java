@@ -33,6 +33,10 @@ public abstract class Module {
 
 	public abstract String getExample();
 
+	public boolean isDisabled() {
+		return false;
+	}
+
 	public void onMessage(DiscordApi api, Message message, Result result, Command command, boolean whatsapp) {
 
 	}

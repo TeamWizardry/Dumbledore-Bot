@@ -241,6 +241,8 @@ public class WizardryBot {
 
 		HashSet<Module> priorityList = new HashSet<>();
 		for (Module module : modules) {
+			if (module.isDisabled()) continue;
+
 			if (shouldRespond || module.overrideResponseCheck()) {
 				module.onMessage(api, message, result, command, whatsapp);
 
